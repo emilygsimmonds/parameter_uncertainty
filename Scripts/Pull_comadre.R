@@ -79,3 +79,4 @@ DOI_summary2 <- comadre_short %>%
 # 61 extra DOIs
 
 write.csv(DOI_summary2, "./Data files/DOIs_short_studies.csv")
+
