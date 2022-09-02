@@ -24,7 +24,6 @@ comadre <- cdb_fetch('comadre')
 # criteria: published since 2010
 
 comadre_reduced <- comadre %>% filter(as.numeric(YearPublication) > 2010,
-                              as.numeric(StudyDuration) > 4,
                               !is.na(DOI_ISBN),
                               DOI_ISBN != "NA")
 
@@ -45,14 +44,6 @@ DOI_summary <- comadre_reduced %>%
   summarize(n_populations = length(unique(MatrixPopulation))) %>% 
   arrange(desc(n_populations))
 
-# number of species - 50 species
-
-comadre_reduced %>% 
-  filter(as.numeric(StudyDuration) > 9) %>%
-  group_by(SpeciesAccepted) %>% 
-  summarize(n_populations = length(unique(MatrixPopulation))) %>% 
-  arrange(desc(n_populations))
-
 #### Pull out DOIs ####
 
 write.csv(DOI_summary, "./Data files/DOIs.csv")
@@ -60,23 +51,3 @@ write.csv(DOI_summary, "./Data files/DOIs.csv")
 #### Save working data set of COMADRE ####
 
 save(comadre_reduced, file = "./Data files/working_comadre.RData")
-
-#### Want the DOIs for all other populations since 2010 (<10 years) ####
-
-# criteria: at least 5 years of data
-# criteria: published since 2016
-
-comadre_short <- comadre %>% filter(as.numeric(YearPublication) > 2010,
-                                      as.numeric(StudyDuration) < 10,
-                                      !is.na(DOI_ISBN),
-                                      DOI_ISBN != "NA")
-
-DOI_summary2 <- comadre_short %>% 
-  group_by(DOI_ISBN) %>% 
-  summarize(n_populations = length(unique(MatrixPopulation))) %>% 
-  arrange(desc(n_populations))
-
-# 61 extra DOIs
-
-write.csv(DOI_summary2, "./Data files/DOIs_short_studies.csv")
-
