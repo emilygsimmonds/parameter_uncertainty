@@ -72,20 +72,20 @@ DOI_summary_2010 <- comadre_2010 %>%
 
 write.csv(DOI_summary_2010, "./Data files/DOIs_2010.csv")
 
-#### Subset matrices to correct size ####
+#### CHOOSE DATA SIMULATION MATRICES ####
 
 load("./Data files/working_comadre.RData")
 
-## size 2 x 2 for data uncertainty simulations
+## subset to right size: size 2 x 2 for data uncertainty simulations
 
 # which matrices have size = 2?
-marker <- as.list(which(comadre_combined$MatrixDimension == 2))
+comadre_2 <- comadre_combined %>% filter(MatrixDimension == 2)
 
-# reduce to these matrices
-
-matrices <- map_df(.x = marker, ~{
-  matrixA <- matA(comadre_combined[.x]$mat)[[1]]
-  stages <- matrixClass(comadre_combined[.x]$mat)[[1]]$MatrixClassAuthor
+# extract info from those matrices
+matrices_data <- map_df(.x = as.list(1:nrow(comadre_2@data)), ~{
+  
+  matrixA <- matA(comadre_2[.x]$mat)[[1]]
+  stages <- matrixClass(comadre_2[.x]$mat)[[1]]$MatrixClassAuthor
   
   output <- data.frame(vital_rate = c("fecundity_j",
                             "fecundity_a", 
@@ -98,8 +98,10 @@ matrices <- map_df(.x = marker, ~{
              value = c(matrixA[1,1],
                        matrixA[1,2],
                        matrixA[2,1],
-                       matrixA[2,2]))
+                       matrixA[2,2]),
+             matrix_number = .x)
   
+  # remove any with 0 for either adult or juvenile fecundity
   if(matrixA[1,1] == 0 | matrixA[1,2] == 0){output <- data.frame(vital_rate = NA,
                                                   author_stage = NA,
                                                   value = NA)}
@@ -109,28 +111,26 @@ matrices <- map_df(.x = marker, ~{
 }) %>% drop_na()
 
 # summarise
-
-summary_matrices <- matrices %>% 
+summary_matrices <- matrices_data %>% 
   group_by(vital_rate) %>%
   summarise(mean = mean(value),
             max = max(value),
             min = min(value))
 
 # find matrix that had highest adult fecundity
+which(matrices_data$value > 5)
 
-which(matrices$value > 5)
+max_data_no0 <- matrices_data[113:116,] # highest fecundity matrix
 
-max_no0 <- matrices[113:116,] # highest fecundity matrix
+which(matrices_data$value < 0.03)
 
-which(matrices$value < 0.04)
-
-min_no0 <- matrices[161:164,] # lowest juvenile fecundity
+min_data_no0 <- matrices_data[161:164,] # lowest juvenile fecundity
 
 ## when one fecundity is 0
-
-matrices_all <- map_df(.x = marker, ~{
-  matrixA <- matA(comadre_combined[.x]$mat)[[1]]
-  stages <- matrixClass(comadre_combined[.x]$mat)[[1]]$MatrixClassAuthor
+matrices_all <- map_df(.x = as.list(1:nrow(comadre_2@data)), ~{
+  
+  matrixA <- matA(comadre_2[.x]$mat)[[1]]
+  stages <- matrixClass(comadre_2[.x]$mat)[[1]]$MatrixClassAuthor
   
   output <- data.frame(vital_rate = c("fecundity_j",
                                       "fecundity_a", 
@@ -143,14 +143,14 @@ matrices_all <- map_df(.x = marker, ~{
                        value = c(matrixA[1,1],
                                  matrixA[1,2],
                                  matrixA[2,1],
-                                 matrixA[2,2]))
+                                 matrixA[2,2]),
+                       matrix_number = .x)
   
   return(output)
   
 })
 
 # summarise
-
 summary_matrices <- matrices_all %>% 
   group_by(vital_rate) %>%
   summarise(mean = mean(value),
@@ -159,17 +159,20 @@ summary_matrices <- matrices_all %>%
 
 which(matrices_all$value > 90)
 
-max_0 <- matrices_all[349:352,]
+max_data_0 <- matrices_all[349:352,] # highest fecundity
 
 #### check matrices ####
 
-eigen(matrix(min_no0$value, nrow = 2, byrow = TRUE)) # 0.75
+eigen(matrix(min_data_no0$value, nrow = 2, byrow = TRUE)) # 0.75
 
-eigen(matrix(max_no0$value, nrow = 2, byrow = TRUE)) # 6.19
+eigen(matrix(max_data_no0$value, nrow = 2, byrow = TRUE)) # 6.19
 
-eigen(matrix(max_0$value, nrow = 2, byrow = TRUE)) # 3.92
+eigen(matrix(max_data_0$value, nrow = 2, byrow = TRUE)) # 3.92
 
 eigen(matrix(c(0.6, 0.7, 0.4, 0.6), nrow = 2, byrow= TRUE)) # 1.13 (mean)
+
+
+#### CHOOSE PARAMETER SIMULATION MATRICES ####
 
 ## identify modal size for parameter uncertainty
 # want to summarise by paper/population and dimension so stop skewing by
@@ -188,7 +191,8 @@ comadre_3 <- comadre_combined %>% filter(MatrixDimension == 3)
 # then extract the full matrix
 matrices <- matA(comadre_3)
 
-# summarise with row means
+# summarise with row sums for elasticity
+# want to get matrices with different balance of importance of vital rates
 summaries <- map_df(.x = matrices, ~{
   
   # calculate elasticities for each matrix
@@ -198,11 +202,13 @@ summaries <- map_df(.x = matrices, ~{
   row_sums <- rowSums(elasticities)
   
   # calculate ratio of fecundity to survival
-  ratio <- row_sums[1]/mean(c(row_sums[2], row_sums[3]))
+  ratio <- (row_sums[1]/length(which(elasticities[1,] > 0)))/
+    (sum(row_sums[2:3])/length(which(elasticities[2:3,] > 0)))
   
 })
 
 # some do not run as have all 0 fecundity etc - exclude these but keep numbering
+# some go to infinity too - also remove
 
 summaries2 <- summaries %>% mutate(number = rownames(summaries)) %>% drop_na
 
@@ -210,33 +216,56 @@ summaries2 <- summaries %>% mutate(number = rownames(summaries)) %>% drop_na
 
 summary(summaries2$A1) # ratios from 0 to infinity
 
-# take matrices that = 1, <0.1782 and >1
+# take matrices that = 1, <0.0.2537 and >1
 
 # take median of those above 1.1
-summary(summaries2[which(summaries2$A1 > 1.1 & summaries2$A1 != "Inf"),1]) # 1.738
+summary(summaries2[which(summaries2$A1 > 1.1 & summaries2$A1 != "Inf"),1]) # 1.431
 
-summaries2[which(summaries2$A1 > 1.735 & summaries2$A1 < 1.74),]
+summaries2[which(summaries2$A1 > 1.43 & summaries2$A1 < 1.432),]
 
-# pick at random
-set.seed(1)
-sample(44:45, 1) # 44
+# 211
+matrices[211]
 
-# take median of those below 0.1782
-summary(summaries2[which(summaries2$A1 < 0.1782),1]) # 0.113765
+# take median of those below 0.2537
+summary(summaries2[which(summaries2$A1 < 0.2537),1]) # 0.16169
 
-summaries2[which(summaries2$A1 > 0.113 & summaries2$A1 < 0.114),]
+summaries2[which(summaries2$A1 > 0.155 & summaries2$A1 < 0.162),]
 
-# pick at random
-set.seed(1)
-sample(c(112,130,132), 1) # 112
-
-matrices[112]
+# 167
+matrices[167]
 
 # find those that = 1
 summaries2[which(summaries2$A1 < 1.01 & summaries2$A1 > 0.999),]
 
-# pick at random
-set.seed(1)
-sample(c(36,103), 1) # 103
+# 103
+matrices[103]
 
-matrices[112]
+#### SAVE OUT META DATA FOR CHOSEN MATRICES ####
+
+## data uncertainty matrices
+
+# object = comadre_2, numbers = max no 0: 121, min no 0: 153, max 0: 88
+
+c(comadre_2[121]$SpeciesAccepted, comadre_2[121]$DOI_ISBN, 
+  comadre_2[121]$CensusType, comadre_2[121]$mat)
+
+c(comadre_2[153]$SpeciesAccepted, comadre_2[153]$DOI_ISBN, 
+  comadre_2[153]$CensusType, comadre_2[153]$mat)
+
+c(comadre_2[88]$SpeciesAccepted, comadre_2[88]$DOI_ISBN, 
+  comadre_2[88]$CensusType, comadre_2[88]$mat)
+
+## parameter uncertainty matrices
+
+# object = comadre_3, numbers = mat1: 211, mat2: 167, mat 3: 103
+
+c(comadre_3[211]$SpeciesAccepted, comadre_3[211]$DOI_ISBN, 
+  comadre_3[211]$CensusType, comadre_3[211]$mat)
+
+c(comadre_3[167]$SpeciesAccepted, comadre_3[167]$DOI_ISBN, 
+  comadre_3[167]$CensusType, comadre_3[167]$mat)
+
+c(comadre_3[103]$SpeciesAccepted, comadre_3[103]$DOI_ISBN, 
+  comadre_3[103]$CensusType, comadre_3[103]$mat)
+
+
