@@ -10,30 +10,36 @@ library(tidyverse)
 
 source('./Scripts/theme_script.R')
 
-# set colour codes for plotting 
+## Load data ####
 
-colour_code <- viridis::viridis(1, begin = 0.7, end = 0.7)
+general_questions <- read.csv('./Data files/general_questions_cleaned.csv',
+                              header = TRUE)
+vital_rates <- read.csv('./Data files/vital_rates.csv', header = TRUE)
 
-colfunc <- colorRampPalette(c("white", colour_code))
+# remove any experimental data
 
-colour_code_venn <- colfunc(10)
+#marker <- general_questions$DOI[which(general_questions$Answer2 == "experiment")]
 
-text_code <- viridis::inferno(1, begin = 0, end = 0)
-
-
-colours <- c("#482677FF", 
-             "#DCE319FF", 
-             "#55C667FF")
+#general_questions <- filter(general_questions, 
+#                            DOI != marker[1] &
+#                              DOI != marker[2] &
+#                              DOI != marker[3])
 
 #### Summaries ####
+
+length(unique(general_questions$DOI)) # 86 
+
+number_papers <- general_questions %>%
+  filter(Number == 1,
+         Answer1 == "yes") 
 
 ### HOW MANY REPORT ANY UNCERTAINTY? ####
 
 # filter the data, group, and summarise as %
-# QU # = 13
+# QU # = 5
 
-Any_uncertainty <- number_questions %>%
-  filter(number == 13,
+general_questions %>%
+  filter(Number == 5,
          Answer1 == "yes" | Answer1 == "no") %>%
   group_by(Answer1) %>%
   dplyr::summarize(count = n()) %>%
@@ -41,28 +47,7 @@ Any_uncertainty <- number_questions %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-Any_uncertainty$position[1] <- Any_uncertainty$position[1] +
-  Any_uncertainty$Perc[2]
-
-# 14.5 no, 85.5 yes
-
-## PLOT
-
-ggplot(data = Any_uncertainty, aes(x="", y=Perc, fill=Answer1)) +
-  geom_bar(stat="identity", width=1, color="white") +
-  plain_theme() +
-  scale_fill_manual(values = colours, guide = "none") +
-  geom_text(aes(y = position, label = paste0(round(Perc*100), "% ", Answer1)), 
-            colour = rev(colours[1:2])) +
-  theme(legend.title = element_blank(),
-        legend.position = "bottom",
-        legend.justification = "top",
-        #axis.text.y = element_blank(),
-        axis.title = element_blank(),
-        axis.text.x = element_blank(),
-        strip.text.y.left = element_text(angle = 0, hjust = 1, face = "bold"),
-        strip.background = element_blank())+
-  labs(title = "Was any uncertainty reported?")
+# 18.7 no, 81.3 yes
 
 
 ### WAS UNCERTAINTY COMPLETE? ####
@@ -70,8 +55,8 @@ ggplot(data = Any_uncertainty, aes(x="", y=Perc, fill=Answer1)) +
 # filter the data, group, and summarise as %
 # QU # = 4
 
-Complete_uncertainty <- number_questions %>%
-  filter(number == 4,
+general_questions %>%
+  filter(Number == 6,
          Answer1 == "yes" | Answer1 == "no") %>%
   group_by(Answer1) %>%
   dplyr::summarize(count = n()) %>%
@@ -79,26 +64,42 @@ Complete_uncertainty <- number_questions %>%
   ungroup()   %>%
   mutate(position = (Perc/2))
 
-Complete_uncertainty$position[1] <- Complete_uncertainty$position[1] +
-  Complete_uncertainty$Perc[2]
+# 46.8 no, 53.2 yes
 
-ggplot(data = Complete_uncertainty, aes(x="", y=Perc, fill=Answer1)) +
-  geom_bar(stat="identity", width=1, color="white") +
-  plain_theme() +
-  scale_fill_manual(values = colours, guide = "none") +
-  geom_text(aes(y = position, label = paste0(round(Perc*100), "% ", Answer1)), 
-            colour = rev(colours[1:2])) +
-  theme(legend.title = element_blank(),
-        legend.position = "bottom",
-        legend.justification = "top",
-        #axis.text.y = element_blank(),
-        axis.title = element_blank(),
-        axis.text.x = element_blank(),
-        strip.text.y.left = element_text(angle = 0, hjust = 1, face = "bold"),
-        strip.background = element_blank())+
-  labs(title = "Was uncertainty complete for all matrix elements?")
+### WHICH WERE MISSED? ####
 
-# 44.4 no, 55.6 yes
+general_questions %>%
+  filter(Number == 6,
+         Answer1 == "no") %>%
+  mutate(Missing_F = case_when(str_detect(Answer2, "reproduction") ~ TRUE,
+                               TRUE ~ FALSE),
+         Missing_S = case_when(str_detect(Answer2, "survival") ~ TRUE,
+                               TRUE ~ FALSE)) %>%
+  group_by(Missing_F, Missing_S) %>%
+  dplyr::summarize(count = n())
+
+# most missing both (13/29)
+# then missing S and F almost equal 7 vs 8 
+
+general_questions %>%
+  filter(Number == 3,
+         Answer1 == "yes" |
+           Answer1 == "no") %>%
+  group_by(Answer1) %>%
+  dplyr::summarize(count = n()) %>%
+  mutate(percentage = count/sum(count))
+
+# % with survival observation process 47.8%
+
+general_questions %>%
+  filter(Number == 4,
+         Answer1 == "yes" |
+           Answer1 == "no") %>%
+  group_by(Answer1) %>%
+  dplyr::summarize(count = n()) %>%
+  mutate(percentage = count/sum(count))
+
+# % with fecundity observation process 11.4%
 
 ### WAS IT PROPAGATED ####
 
@@ -106,7 +107,8 @@ ggplot(data = Complete_uncertainty, aes(x="", y=Perc, fill=Answer1)) +
 # filter the data, group, and summarise as %
 
 # by vital rate
-Propagated_uncertainty <- vital_rates %>%
+vital_rates %>%
+  filter(!is.na(Uncertainty1)) %>%
   mutate(Propagated.to.final.matrix. = 
            case_when(Propagated.to.final.matrix. == "bootstrapped" ~ "yes",
                      Propagated.to.final.matrix. == "not sure" ~ "can't tell",
@@ -119,31 +121,11 @@ Propagated_uncertainty <- vital_rates %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-Propagated_uncertainty$position[1] <- Propagated_uncertainty$position[1] +
-  Propagated_uncertainty$Perc[2]
-
-ggplot(data = Propagated_uncertainty, aes(x="", y=Perc, 
-                                          fill=Propagated.to.final.matrix.)) +
-  geom_bar(stat="identity", width=1, color="white") +
-  plain_theme() +
-  scale_fill_manual(values = colours, guide = "none") +
-  geom_text(aes(y = position, label = paste0(round(Perc*100), "% ", 
-                                             Propagated.to.final.matrix.)), 
-            colour = rev(colours[1:2])) +
-  theme(legend.title = element_blank(),
-        legend.position = "bottom",
-        legend.justification = "top",
-        #axis.text.y = element_blank(),
-        axis.title = element_blank(),
-        axis.text.x = element_blank(),
-        strip.text.y.left = element_text(angle = 0, hjust = 1, face = "bold"),
-        strip.background = element_blank())+
-  labs(title = "Was uncertainty propagated to final predictions? \n(by vital rate)")
-
-# 22.9 no, 77.1 yes
+# 25.4 no, 74.6 yes
 
 # by paper
 Propagated_uncertainty_paper <- vital_rates %>%
+  filter(!is.na(Uncertainty1)) %>%
   mutate(Propagated.to.final.matrix. = 
            case_when(Propagated.to.final.matrix. == "bootstrapped" ~ "yes",
                      Propagated.to.final.matrix. == "not sure" ~ "can't tell",
@@ -152,17 +134,33 @@ Propagated_uncertainty_paper <- vital_rates %>%
            Propagated.to.final.matrix. == "no") %>%
   group_by(DOI, Propagated.to.final.matrix.) %>%
   summarise(paper_count = n()) %>%
+  mutate(percent = paper_count/sum(paper_count)) %>%
   ungroup() %>%
   complete(Propagated.to.final.matrix., nesting(DOI), # add in rows that are missing
            fill = list(paper_count = 0)) %>%
+  group_by(DOI, Propagated.to.final.matrix.) %>%
   filter(Propagated.to.final.matrix. == "yes") 
 
 length(which(Propagated_uncertainty_paper$paper_count == 0))/
   length(Propagated_uncertainty_paper$paper_count)
 
-# 23% propagate no uncertainty
+# 20% propagate no uncertainty
 
-#### HOW MANY LAMBDAS WITH UNCERTAINTY CROSS 0? ####
+#### HOW MANY LAMBDAS WITH UNCERTAINTY CROSS 1? ####
+
+lambda_checks <- vital_rates %>%
+  filter(!Estimate %in% c("not reported", "Can't find it") &
+         !Uncertainty1 %in% c("not reported", "Can't find it") &
+         Uncertainty2 != "Can't find it",
+         Vital.rate == "lambda") %>%
+  mutate(Estimate = as.numeric(Estimate),
+         Uncertainty1 = as.numeric(Uncertainty1),
+         Uncertainty2 = as.numeric(Uncertainty2)) %>%
+  mutate(cross1 = case_when(Uncertainty1 < 1 & Uncertainty2 > 1
+                               ~ TRUE,
+                            TRUE ~ FALSE)) %>%
+  group_by(cross1) %>%
+  summarise(count = n()) # 19/(19+37) = 33.9 %
 
 # and what uncertainty went into them? I.e. split by complete, F or S
 

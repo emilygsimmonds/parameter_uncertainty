@@ -68,12 +68,10 @@ vital_rates_editted2 <- vital_rates_editted %>%
 which(vital_rates_editted2$proportion > 1)
 vital_rates_editted2[238,]
 
-# then take the mean
-
 # then calculate summaries of the proportional error
 vital_rates_editted2 %>% # then calculate each as a proportion of the mean estimate
   group_by(Fecundity) %>% summarise(min = min(proportion, na.rm =TRUE), 
-                                    mean = mean(proportion, na.rm =TRUE), 
+                                    mean = mean(proportion, na.rm =TRUE),
+                                    median = median(proportion, na.rm = TRUE),
                                     max = max(proportion, na.rm =TRUE),
                                     count = n()) # take 1st and 3rd quartiles 
-# Survival = 0.005% to 38% mean 13% n = 61

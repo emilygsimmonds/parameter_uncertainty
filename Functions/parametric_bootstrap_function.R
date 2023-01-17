@@ -33,13 +33,13 @@ new_matrix <- mean_matrix
 if(!is.null(uncertainty_fecundity)){
 if(mean_matrix[1,1] != 0){new_matrix[1,1] <- lnorms(1, 
                                                mean_matrix[1,1], 
-                                               (mean_matrix[1,1]*uncertainty_fecundity)*2)}
+                                               (mean_matrix[1,1]*uncertainty_fecundity)^2)}
 if(mean_matrix[1,2] != 0){new_matrix[1,2] <- lnorms(1, 
                                                mean_matrix[1,2], 
-                                               (mean_matrix[1,2]*uncertainty_fecundity)*2)}
+                                               (mean_matrix[1,2]*uncertainty_fecundity)^2)}
 if(mean_matrix[1,3] != 0){new_matrix[1,3] <- lnorms(1, 
                                                mean_matrix[1,3], 
-                                               (mean_matrix[1,3]*uncertainty_fecundity)*2)}}
+                                               (mean_matrix[1,3]*uncertainty_fecundity)^2)}}
 
 # sample survival but make sure not to if matrix element 0 
 

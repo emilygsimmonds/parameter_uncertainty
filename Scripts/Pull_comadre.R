@@ -72,106 +72,7 @@ DOI_summary_2010 <- comadre_2010 %>%
 
 write.csv(DOI_summary_2010, "./Data files/DOIs_2010.csv")
 
-#### CHOOSE DATA SIMULATION MATRICES ####
-
-load("./Data files/working_comadre.RData")
-
-## subset to right size: size 2 x 2 for data uncertainty simulations
-
-# which matrices have size = 2?
-comadre_2 <- comadre_combined %>% filter(MatrixDimension == 2)
-
-# extract info from those matrices
-matrices_data <- map_df(.x = as.list(1:nrow(comadre_2@data)), ~{
   
-  matrixA <- matA(comadre_2[.x]$mat)[[1]]
-  stages <- matrixClass(comadre_2[.x]$mat)[[1]]$MatrixClassAuthor
-  
-  output <- data.frame(vital_rate = c("fecundity_j",
-                            "fecundity_a", 
-                            "survival_j",
-                            "survival_a"),
-             author_stage = c(stages[1],
-                       stages[2],
-                       stages[1],
-                       stages[2]),
-             value = c(matrixA[1,1],
-                       matrixA[1,2],
-                       matrixA[2,1],
-                       matrixA[2,2]),
-             matrix_number = .x)
-  
-  # remove any with 0 for either adult or juvenile fecundity
-  if(matrixA[1,1] == 0 | matrixA[1,2] == 0){output <- data.frame(vital_rate = NA,
-                                                  author_stage = NA,
-                                                  value = NA)}
-  
-  return(output)
-  
-}) %>% drop_na()
-
-# summarise
-summary_matrices <- matrices_data %>% 
-  group_by(vital_rate) %>%
-  summarise(mean = mean(value),
-            max = max(value),
-            min = min(value))
-
-# find matrix that had highest adult fecundity
-which(matrices_data$value > 5)
-
-max_data_no0 <- matrices_data[113:116,] # highest fecundity matrix
-
-which(matrices_data$value < 0.03)
-
-min_data_no0 <- matrices_data[161:164,] # lowest juvenile fecundity
-
-## when one fecundity is 0
-matrices_all <- map_df(.x = as.list(1:nrow(comadre_2@data)), ~{
-  
-  matrixA <- matA(comadre_2[.x]$mat)[[1]]
-  stages <- matrixClass(comadre_2[.x]$mat)[[1]]$MatrixClassAuthor
-  
-  output <- data.frame(vital_rate = c("fecundity_j",
-                                      "fecundity_a", 
-                                      "survival_j",
-                                      "survival_a"),
-                       author_stage = c(stages[1],
-                                        stages[2],
-                                        stages[1],
-                                        stages[2]),
-                       value = c(matrixA[1,1],
-                                 matrixA[1,2],
-                                 matrixA[2,1],
-                                 matrixA[2,2]),
-                       matrix_number = .x)
-  
-  return(output)
-  
-})
-
-# summarise
-summary_matrices <- matrices_all %>% 
-  group_by(vital_rate) %>%
-  summarise(mean = mean(value),
-            max = max(value),
-            min = min(value))
-
-which(matrices_all$value > 90)
-
-max_data_0 <- matrices_all[349:352,] # highest fecundity
-
-#### check matrices ####
-
-eigen(matrix(min_data_no0$value, nrow = 2, byrow = TRUE)) # 0.75
-
-eigen(matrix(max_data_no0$value, nrow = 2, byrow = TRUE)) # 6.19
-
-eigen(matrix(max_data_0$value, nrow = 2, byrow = TRUE)) # 3.92
-
-eigen(matrix(c(0.6, 0.7, 0.4, 0.6), nrow = 2, byrow= TRUE)) # 1.13 (mean)
-
-
 #### CHOOSE PARAMETER SIMULATION MATRICES ####
 
 ## identify modal size for parameter uncertainty
@@ -193,52 +94,51 @@ matrices <- matA(comadre_3)
 
 # summarise with row sums for elasticity
 # want to get matrices with different balance of importance of vital rates
-summaries <- map_df(.x = matrices, ~{
+summaries <- map2_df(.x = matrices,
+                     .y = as.list(seq(1, length(matrices), 1)), ~{
   
   # calculate elasticities for each matrix
   elasticities <- elasticity(.x)
   
   # want the row sums
-  row_sums <- rowSums(elasticities)
+  row_sums <- rowSums(elasticities, na.rm = TRUE)
   
   # calculate ratio of fecundity to survival
   ratio <- (row_sums[1]/length(which(elasticities[1,] > 0)))/
     (sum(row_sums[2:3])/length(which(elasticities[2:3,] > 0)))
+  
+  # calculate if species breeds at all ages or just one
+  all <- length(which(.x[1,] > 0)) == 3
+  one <- length(which(.x[1,] > 0)) == 1
+  
+  return(data.frame(ratio = ratio,
+                    all = all,
+                    one = one,
+                    index = .y))
   
 })
 
 # some do not run as have all 0 fecundity etc - exclude these but keep numbering
 # some go to infinity too - also remove
 
-summaries2 <- summaries %>% mutate(number = rownames(summaries)) %>% drop_na
+summaries2 <- summaries %>% drop_na
 
-# find the 1st and 3rd quantiles fecundity and survival
+# split into those with all = TRUE and those with one = TRUE
 
-summary(summaries2$A1) # ratios from 0 to infinity
+breed_once <- summaries2 %>% filter(one == TRUE) %>% arrange(ratio)
+breed_all <- summaries2 %>% filter(all == TRUE) %>% arrange(ratio)
 
-# take matrices that = 1, <0.0.2537 and >1
+# want 5 matrices from each. 12.5th, 25th, 50th, 75th and 87.5th percentiles approx
 
-# take median of those above 1.1
-summary(summaries2[which(summaries2$A1 > 1.1 & summaries2$A1 != "Inf"),1]) # 1.431
+markers <- c(0.125, 0.25, 0.5, 0.75, 0.875)
 
-summaries2[which(summaries2$A1 > 1.43 & summaries2$A1 < 1.432),]
+breed_once_matrices <- breed_once[round(length(breed_once[,1])*markers),]$index
 
-# 211
-matrices[211]
+breed_all_matrices <- breed_all[round(length(breed_all[,1])*markers),]$index
 
-# take median of those below 0.2537
-summary(summaries2[which(summaries2$A1 < 0.2537),1]) # 0.16169
+matrices[breed_all_matrices]
 
-summaries2[which(summaries2$A1 > 0.155 & summaries2$A1 < 0.162),]
-
-# 167
-matrices[167]
-
-# find those that = 1
-summaries2[which(summaries2$A1 < 1.01 & summaries2$A1 > 0.999),]
-
-# 103
-matrices[103]
+matrices[breed_once_matrices]
 
 #### SAVE OUT META DATA FOR CHOSEN MATRICES ####
 

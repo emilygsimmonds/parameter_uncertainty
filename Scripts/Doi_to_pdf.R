@@ -9,8 +9,8 @@ library(httr)
 
 # load DOI
 
-DOI <- read.csv("./Data files/DOIs.csv", header = TRUE)
-
+#DOI <- read.csv("./Data files/DOIs.csv", header = TRUE)
+DOI <- read.csv("./Data files/DOIs_2010.csv", header = TRUE)
 
 #### Make DOI a url ####
 
