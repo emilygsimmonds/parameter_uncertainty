@@ -23,64 +23,46 @@ library(popbio)
 ################################################################################
 
 parametric_bootstrap_function <- function(mean_matrix,
-                                          uncertainty_fecundity = NULL,
-                                          uncertainty_survival = NULL){
+                                          uncertainty_fecundity,
+                                          uncertainty_survival,
+                                          matrix_number,
+                                          breeding_stages = c("multiple", 
+                                                              "one"),
+                                          uncertainty_level = c("none", "low", 
+                                                                "mid", 
+                                                                "high")){
 # set up new matrix to store results
 new_matrix <- mean_matrix
-  
+
 # first sample fecundity values but make sure not to if matrix element 0
 # only want to run if uncertainty_fecundity is set
-if(!is.null(uncertainty_fecundity)){
-if(mean_matrix[1,1] != 0){new_matrix[1,1] <- lnorms(1, 
-                                               mean_matrix[1,1], 
-                                               (mean_matrix[1,1]*uncertainty_fecundity)^2)}
-if(mean_matrix[1,2] != 0){new_matrix[1,2] <- lnorms(1, 
-                                               mean_matrix[1,2], 
-                                               (mean_matrix[1,2]*uncertainty_fecundity)^2)}
-if(mean_matrix[1,3] != 0){new_matrix[1,3] <- lnorms(1, 
-                                               mean_matrix[1,3], 
-                                               (mean_matrix[1,3]*uncertainty_fecundity)^2)}}
+if(uncertainty_fecundity != "NULL"){
+  
+# identify which elements of matrix have non-zero entries for fecundity
+marker <- which(mean_matrix[1,] != 0)
+  
+new_matrix[1,marker] <- lnorms(1, 
+                         mean_matrix[1,marker], 
+                         (mean_matrix[1,marker]*as.numeric(uncertainty_fecundity))^2)}
+
 
 # sample survival but make sure not to if matrix element 0 
+if(uncertainty_survival != "NULL"){
 
-if(!is.null(uncertainty_survival)){
-if(mean_matrix[2,1] != 0){
-  if(uncertainty_survival^2 >= (1-mean_matrix[2,1])*mean_matrix[2,1]) # need to check stdev not too high
-  {uncertainty_survival2 <- sqrt(((1-mean_matrix[2,1])*mean_matrix[2,1]))-0.1}else{ # if it is, set to max possible
-      uncertainty_survival2 <- uncertainty_survival}
-  new_matrix[2,1] <- betaval(mean_matrix[2,1], 
-  mean_matrix[2,1]*uncertainty_survival2)}
-if(mean_matrix[2,2] != 0){
-    if(uncertainty_survival^2 >= (1-mean_matrix[2,2])*mean_matrix[2,2])
-    {uncertainty_survival2 <- sqrt(((1-mean_matrix[2,2])*mean_matrix[2,2]))-0.1}else{
-      uncertainty_survival2 <- uncertainty_survival}
-  new_matrix[2,2] <- betaval(mean_matrix[2,2], 
-  mean_matrix[2,2]*uncertainty_survival2)}
-if(mean_matrix[2,3] != 0){
-    if(uncertainty_survival^2 >= (1-mean_matrix[2,3])*mean_matrix[2,3])
-    {uncertainty_survival2 <- sqrt(((1-mean_matrix[2,3])*mean_matrix[2,3]))-0.1}else{
-      uncertainty_survival2 <- uncertainty_survival}
-    new_matrix[2,3] <- betaval(mean_matrix[2,3], 
-    mean_matrix[2,3]*uncertainty_survival2)}
-if(mean_matrix[3,1] != 0){
-    if(uncertainty_survival^2 >= (1-mean_matrix[3,1])*mean_matrix[3,1])
-    {uncertainty_survival2 <- sqrt(((1-mean_matrix[3,1])*mean_matrix[3,1]))-0.1}else{
-      uncertainty_survival2 <- uncertainty_survival}
-  new_matrix[3,1] <- betaval(mean_matrix[3,1], 
-  mean_matrix[3,1]*uncertainty_survival2)}
-if(mean_matrix[3,2] != 0){
-    if(uncertainty_survival^2 >= (1-mean_matrix[3,2])*mean_matrix[3,2])
-    {uncertainty_survival2 <- sqrt(((1-mean_matrix[3,2])*mean_matrix[3,2]))-0.1}else{
-      uncertainty_survival2 <- uncertainty_survival}
-  new_matrix[3,2] <- betaval(mean_matrix[3,2], 
-  mean_matrix[3,2]*uncertainty_survival2)}
-if(mean_matrix[3,3] != 0){
-    if(uncertainty_survival^2 >= (1-mean_matrix[3,3])*mean_matrix[3,3])
-    {uncertainty_survival2 <- sqrt(((1-mean_matrix[3,3])*mean_matrix[3,3]))-0.1}else{
-     uncertainty_survival2 <- uncertainty_survival}
-  new_matrix[3,3] <- betaval(mean_matrix[3,3], 
-  mean_matrix[3,3]*uncertainty_survival2)}
-  }
+# identify which survival elements are non-zero    
+marker2 <- which(mean_matrix[-1,] != 0) 
+
+uncertainty_survival <- as.numeric(uncertainty_survival)
+
+# do this in a loop so we can check each entry
+for(i in 1:length(marker2)){
+if(uncertainty_survival^2 >= (1-mean_matrix[-1,marker2[i]])*mean_matrix[-1,marker2[i]]) # need to check stdev not too high
+{uncertainty_survival2 <- sqrt(((1-mean_matrix[-1,marker2[i]])*mean_matrix[-1,marker2[i]]))-0.1}else{ # if it is, set to max possible
+uncertainty_survival2 <- uncertainty_survival}
+  
+  new_matrix[2:length(mean_matrix[,1]), marker2[i]] <- 
+    betaval(mean_matrix[-1,marker2[i]], 
+            mean_matrix[-1,marker2[i]]*uncertainty_survival2)}}
   
 lambda <- popdemo::eigs(new_matrix, what = "lambda")
 
@@ -93,9 +75,24 @@ senmat <- Re(v[1,] %*% t(w[,1])) # calculate sensitivity
 emat <- (1/(Re(lambda))) * senmat * new_matrix
 
 elasticity <- which(emat == max(emat))
+
+if(uncertainty_survival == "NULL" & uncertainty_fecundity == "NULL"){
+  prop_scenario <- "none"}
+if(uncertainty_survival != "NULL" & uncertainty_fecundity != "NULL"){
+  prop_scenario <- "full"}
+if(uncertainty_survival == "NULL" & uncertainty_fecundity != "NULL"){
+  prop_scenario <- "f_only"}
+if(uncertainty_survival != "NULL" & uncertainty_fecundity == "NULL"){
+  prop_scenario <- "s_only"}
+
+output <- data.frame(matrix_number = matrix_number,
+                     breeding_stages = breeding_stages,
+                     uncertainty_level = uncertainty_level,
+                     lambda = lambda,
+                     elasticity = elasticity,
+                     prop_scenario = prop_scenario)
   
-return(list(lambda = lambda, 
-            elasticity = elasticity))
+return(output)
 
 }
 

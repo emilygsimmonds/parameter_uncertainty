@@ -75,27 +75,82 @@ write.csv(DOI_summary_2010, "./Data files/DOIs_2010.csv")
   
 #### CHOOSE PARAMETER SIMULATION MATRICES ####
 
-## identify modal size for parameter uncertainty
-# want to summarise by paper/population and dimension so stop skewing by
-# a few studies
+load("./Data files/working_comadre.RData")
 
-size_by_paper <- comadre_combined %>% 
-  group_by(DOI_ISBN, MatrixDimension) %>% summarise(count = n())
+#### 2x2 matrices ####
 
-counts <- size_by_paper %>% group_by(MatrixDimension) %>% summarise(count = n())
-
-# 3x3 is most common after correcting for multiple per paper
-
-# which matrices have size = 3?
-comadre_3 <- comadre_combined %>% filter(MatrixDimension == 3)
+# which matrices have size = 2?
+comadre_22 <- comadre_combined %>% filter(MatrixDimension == 2)
 
 # then extract the full matrix
-matrices <- matA(comadre_3)
+matrices_22 <- matA(comadre_22)
 
 # summarise with row sums for elasticity
 # want to get matrices with different balance of importance of vital rates
-summaries <- map2_df(.x = matrices,
-                     .y = as.list(seq(1, length(matrices), 1)), ~{
+summaries_22 <- map2_df(.x = matrices_22,
+                        .y = as.list(seq(1, length(matrices_22), 1)), ~{
+                          
+                          # calculate elasticities for each matrix
+                          elasticities <- elasticity(.x)
+                          
+                          # want the row sums
+                          row_sums <- rowSums(elasticities, na.rm = TRUE)
+                          
+                          # calculate ratio of fecundity to survival
+                          ratio <- (row_sums[1]/length(which(elasticities[1,] > 0)))/
+                            (sum(row_sums[2])/length(which(elasticities[2,] > 0)))
+                          
+                          # calculate if species breeds at all ages or just one
+                          all <- length(which(.x[1,] > 0)) == 2
+                          one <- length(which(.x[1,] > 0)) == 1
+                          
+                          return(data.frame(ratio = ratio,
+                                            all = all,
+                                            one = one,
+                                            index = .y))
+                          
+                        })
+
+# some do not run as have all 0 fecundity etc - exclude these but keep numbering
+# some go to infinity too - also remove
+
+summaries_222 <- summaries_22 %>% drop_na
+
+# split into those with all = TRUE and those with one = TRUE
+
+breed_once_22 <- summaries_222 %>% filter(one == TRUE) %>% arrange(ratio)
+breed_all_22 <- summaries_222 %>% filter(all == TRUE) %>% arrange(ratio)
+
+# want 5 matrices from each. 12.5th, 25th, 50th, 75th and 87.5th percentiles approx
+
+markers <- c(0.125, 0.25, 0.5, 0.75, 0.875)
+
+breed_once_matrices_22 <- breed_once_22[round(length(breed_once_22[,1])*markers),]$index
+
+breed_all_matrices_22 <- breed_all_22[round(length(breed_all_22[,1])*markers),]$index
+
+to_save <- matrices_22[breed_all_matrices_22]
+
+save(to_save, 
+     file = "./Data files/twobytwo_breed_all.RData")
+
+to_save <- matrices_22[breed_once_matrices_22]
+
+save(to_save, 
+     file = "./Data files/twobytwo_breed_once.RData")
+
+#### 3x3 matrices ####
+
+# which matrices have size = 3?
+comadre_33 <- comadre_combined %>% filter(MatrixDimension == 3)
+
+# then extract the full matrix
+matrices_33 <- matA(comadre_33)
+
+# summarise with row sums for elasticity
+# want to get matrices with different balance of importance of vital rates
+summaries_33 <- map2_df(.x = matrices_33,
+                     .y = as.list(seq(1, length(matrices_33), 1)), ~{
   
   # calculate elasticities for each matrix
   elasticities <- elasticity(.x)
@@ -121,24 +176,93 @@ summaries <- map2_df(.x = matrices,
 # some do not run as have all 0 fecundity etc - exclude these but keep numbering
 # some go to infinity too - also remove
 
-summaries2 <- summaries %>% drop_na
+summaries_332 <- summaries_33 %>% drop_na
 
 # split into those with all = TRUE and those with one = TRUE
 
-breed_once <- summaries2 %>% filter(one == TRUE) %>% arrange(ratio)
-breed_all <- summaries2 %>% filter(all == TRUE) %>% arrange(ratio)
+breed_once_33 <- summaries_332 %>% filter(one == TRUE) %>% arrange(ratio)
+breed_all_33 <- summaries_332 %>% filter(all == TRUE) %>% arrange(ratio)
 
 # want 5 matrices from each. 12.5th, 25th, 50th, 75th and 87.5th percentiles approx
 
 markers <- c(0.125, 0.25, 0.5, 0.75, 0.875)
 
-breed_once_matrices <- breed_once[round(length(breed_once[,1])*markers),]$index
+breed_once_matrices_33 <- breed_once_33[round(length(breed_once_33[,1])*markers),]$index
 
-breed_all_matrices <- breed_all[round(length(breed_all[,1])*markers),]$index
+breed_all_matrices_33 <- breed_all_33[round(length(breed_all_33[,1])*markers),]$index
 
-matrices[breed_all_matrices]
+to_save <- matrices_33[breed_all_matrices_33]
 
-matrices[breed_once_matrices]
+save(to_save, 
+     file = "./Data files/threebythree_breed_all.RData")
+
+to_save <- matrices_33[breed_once_matrices_33]
+  
+save(to_save, 
+     file = "./Data files/threebythree_breed_once.RData")
+
+
+#### 5x5 ####
+
+# which matrices have size = 5?
+comadre_55 <- comadre_combined %>% filter(MatrixDimension == 5)
+
+# then extract the full matrix
+matrices_55 <- matA(comadre_55)
+
+# summarise with row sums for elasticity
+# want to get matrices with different balance of importance of vital rates
+summaries_55 <- map2_df(.x = matrices_55,
+                        .y = as.list(seq(1, length(matrices_55), 1)), ~{
+                          
+                          # calculate elasticities for each matrix
+                          elasticities <- elasticity(.x)
+                          
+                          # want the row sums
+                          row_sums <- rowSums(elasticities, na.rm = TRUE)
+                          
+                          # calculate ratio of fecundity to survival
+                          ratio <- (row_sums[1]/length(which(elasticities[1,] > 0)))/
+                            (sum(row_sums[2:5])/length(which(elasticities[2:5,] > 0)))
+                          
+                          # calculate if species breeds at all ages or just one
+                          all <- length(which(.x[1,] > 0)) >= 3
+                          one <- length(which(.x[1,] > 0)) == 1
+                          
+                          return(data.frame(ratio = ratio,
+                                            all = all,
+                                            one = one,
+                                            index = .y))
+                          
+                        })
+
+# some do not run as have all 0 fecundity etc - exclude these but keep numbering
+# some go to infinity too - also remove
+
+summaries_552 <- summaries_55 %>% drop_na
+
+# split into those with all = TRUE and those with one = TRUE
+
+breed_once_55 <- summaries_552 %>% filter(one == TRUE) %>% arrange(ratio)
+breed_all_55 <- summaries_552 %>% filter(all == TRUE) %>% arrange(ratio)
+
+# want 5 matrices from each. 12.5th, 25th, 50th, 75th and 87.5th percentiles approx
+
+markers <- c(0.125, 0.25, 0.5, 0.75, 0.875)
+
+breed_once_matrices_55 <- breed_once_55[round(length(breed_once_55[,1])*markers),]$index
+
+breed_all_matrices_55 <- breed_all_55[round(length(breed_all_55[,1])*markers),]$index
+
+to_save <- matrices_55[breed_all_matrices_55]
+
+save(to_save, 
+     file = "./Data files/fivebyfive_breed_all.RData")
+
+to_save <- matrices_55[breed_once_matrices_55]
+
+save(to_save, 
+     file = "./Data files/fivebyfive_breed_once.RData")
 
 #### SAVE OUT META DATA FOR CHOSEN MATRICES ####
 
@@ -148,24 +272,5 @@ matrices[breed_once_matrices]
 
 c(comadre_2[121]$SpeciesAccepted, comadre_2[121]$DOI_ISBN, 
   comadre_2[121]$CensusType, comadre_2[121]$mat)
-
-c(comadre_2[153]$SpeciesAccepted, comadre_2[153]$DOI_ISBN, 
-  comadre_2[153]$CensusType, comadre_2[153]$mat)
-
-c(comadre_2[88]$SpeciesAccepted, comadre_2[88]$DOI_ISBN, 
-  comadre_2[88]$CensusType, comadre_2[88]$mat)
-
-## parameter uncertainty matrices
-
-# object = comadre_3, numbers = mat1: 211, mat2: 167, mat 3: 103
-
-c(comadre_3[211]$SpeciesAccepted, comadre_3[211]$DOI_ISBN, 
-  comadre_3[211]$CensusType, comadre_3[211]$mat)
-
-c(comadre_3[167]$SpeciesAccepted, comadre_3[167]$DOI_ISBN, 
-  comadre_3[167]$CensusType, comadre_3[167]$mat)
-
-c(comadre_3[103]$SpeciesAccepted, comadre_3[103]$DOI_ISBN, 
-  comadre_3[103]$CensusType, comadre_3[103]$mat)
 
 

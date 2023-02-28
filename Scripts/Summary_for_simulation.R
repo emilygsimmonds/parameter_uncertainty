@@ -23,12 +23,6 @@ load("./Data files/working_comadre.RData")
 
 # summarise uncertainty by paper, model, type, and matrix position
 
-test <- vital_rates %>% filter(Vital.rate != "lambda",
-                               Uncertainty1 != "can't tell") %>% 
-  drop_na(Matrix.position) %>%
-  group_by(Uncertainty.type, Matrix.position) %>%
-  summarise(count = n())
-
 # detect which vital rates relate to fecundity
 
 vital_rates_editted <- vital_rates %>% 
@@ -43,7 +37,7 @@ vital_rates_editted <- vital_rates %>%
   drop_na(Fecundity) %>%
   filter(Uncertainty.type == "standard error" | 
          Uncertainty.type == "confidence interval" |
-         Uncertainty.type == "standard deviation",
+         Uncertainty.type != "standard deviation",
          Uncertainty1 != "Can't find it" & Uncertainty1 != "not reported",
          Uncertainty1 > 0) 
 
@@ -65,13 +59,19 @@ vital_rates_editted2 <- vital_rates_editted %>%
   filter(check2 < 0.06 & check2 > -0.06) %>% # margin of tolerance of 0.05 otherwise exclude
   mutate(proportion = Uncertainty1/Estimate) 
 
+# check whether any have uncertainty more than the value of estimate
 which(vital_rates_editted2$proportion > 1)
-vital_rates_editted2[238,]
 
 # then calculate summaries of the proportional error
-vital_rates_editted2 %>% # then calculate each as a proportion of the mean estimate
-  group_by(Fecundity) %>% summarise(min = min(proportion, na.rm =TRUE), 
-                                    mean = mean(proportion, na.rm =TRUE),
+Uncertainty_summary <- vital_rates_editted2 %>% # then calculate each as a proportion of the mean estimate
+  group_by(Fecundity) %>% summarise(lower = quantile(proportion, probs=(0.25),na.rm =TRUE), 
                                     median = median(proportion, na.rm = TRUE),
-                                    max = max(proportion, na.rm =TRUE),
+                                    upper = quantile(proportion, probs=(0.975),na.rm =TRUE), 
                                     count = n()) # take 1st and 3rd quartiles 
+# Fecundity = FALSE == Survival
+
+#### save out uncertainty ####
+
+write.csv(Uncertainty_summary, 
+          file = "./Data files/Uncertainty_summary.csv", 
+          row.names = FALSE)

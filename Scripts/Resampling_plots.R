@@ -14,194 +14,176 @@ library(popdemo)
 
 ## source scripts ####
 
-source("./Functions/run_resampling_function.R")
 source("./Scripts/theme_script.R")
 
-## set up matrices ####
+## import results ####
 
-matrix1 <- matrix(c(0.1378489, 3.5, 3.5,
-                    0.01347, 0.169622, 0,
-                    0.006739, 0.012918, 0.171508), byrow = TRUE, nrow = 3)
-
-
-matrix2 <- matrix(c(0, 0.58125, 0.678125,
-                    0.141, 0, 0,
-                    0, 0.80400, 0.831), byrow = TRUE, nrow = 3)
-
-
-matrix3 <- matrix(c(0.310025, 0.78410, 12,
-                    0.179125, 0.54465, 0.1678,
-                    0.01850, 0.02875, 0.5747), byrow = TRUE, nrow = 3)
-
-## set up uncertainty ####
-
-uncertainty_fecundity <- c(0.01, 0.122, 2.05)
-uncertainty_survival <- c(0.006, 0.167, 1.58)
-
-
-################################################################################
-
-#### RUN RESAMPLING ####
-
-results_matrix1 <- run_resampling_function(mean_matrix = matrix1,
-                                   uncertainty_fecundity = uncertainty_fecundity,
-                                   uncertainty_survival = uncertainty_survival,
-                                   matrix_name = "matrix1")
-
-results_matrix2 <- run_resampling_function(mean_matrix = matrix2,
-                                           uncertainty_fecundity = uncertainty_fecundity,
-                                           uncertainty_survival = uncertainty_survival,
-                                           matrix_name = "matrix2")
-
-results_matrix3 <- run_resampling_function(mean_matrix = matrix3,
-                                           uncertainty_fecundity = uncertainty_fecundity,
-                                           uncertainty_survival = uncertainty_survival,
-                                           matrix_name = "matrix3")
+load("./Data files/two_by_two_results.RData")
 
 ################################################################################
 
 #### Plot ####
 
-# join datasets
-
-full_results <- bind_rows(results_matrix1, results_matrix2,
-                          results_matrix3)
-
-save(full_results, file = "full_results_resampling.RData")
-
-load("full_results_resampling.RData")
-
 colours <- c("#feff54","#FFFFFF", "#30666B", "#1E2E39")
 
 ################################################################################
 
-#### BES PLOTS ###
-
-# will focus on median uncertainty. 
+#### PLOTS ###
 
 # re-order the factor levels
-plot_results <- full_results %>%
-  dplyr::mutate(propagation_type = as.factor(propagation_type),
-                propagation_type = plyr::revalue(propagation_type, 
+plot_results_temp <- bind_rows(filter(two_by_two_results,
+                                      uncertainty_level != "none",
+                                      breeding_stages == "one"), 
+                          filter(two_by_two_results,
+                          uncertainty_level == "none",
+                          breeding_stages == "one",
+                          matrix_number == 1)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 2)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 3)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 4)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 5)[1:30,])
+
+plot_results_temp[(nrow(plot_results_temp)-149):nrow(plot_results_temp),
+                  "uncertainty_level"] <-
+  rep(rep(c("high", "mid", "low"), each = 10), 5)
+
+plot_results <- plot_results_temp %>%
+  dplyr::mutate(prop_scenario = as.factor(prop_scenario),
+                prop_scenario = plyr::revalue(prop_scenario, 
                                            c("f_only"="fecundity \nonly", 
                                              "s_only"="survival \nonly",
                                              "full" = "full \npropagation",
-                                             "mean_matrix" = "no \npropagation")),
-                propagation_type = fct_relevel(propagation_type, 
+                                             "none" = "no \npropagation")),
+                prop_scenario = fct_relevel(prop_scenario, 
                                      "no \npropagation",
                                      "full \npropagation",
                                      "fecundity \nonly",
-                                     "survival \nonly"))
+                                     "survival \nonly"),
+                uncertainty_level = as.factor(uncertainty_level),
+                uncertainty_level = fct_relevel(uncertainty_level,
+                                                "low",
+                                                "mid",
+                                                "high")) %>%
+  filter(uncertainty_level != "none") 
 
 
-#### DISTRIBUTION EXAMPLES ####
 
-samples <- data.frame(samples = dbeta(seq(0, 1, length.out = 100),
-                 shape1 = 1.5, shape2 = 3),
-                 x = seq(0, 1, length.out = 100))
-
-ggplot(data = samples, aes(x = x,
-           y = samples))+
-  geom_line(colour = "yellow") +
-  labs(y = "density",
-       x = "probability") +
-  BES_theme()
-
-
-ggsave("BES_beta.png", last_plot(), width = 10, height = 10, units = "cm", 
-       dpi = 300)
-
-logvar <- log(((3.5*0.22)^2)/(3.5^2)+1)
-
-samples <- data.frame(samples = dlnorm(seq(1, 10, length.out = 1000),
-                                      meanlog = log(3.5), sdlog=logvar),
-                      x = seq(0, 10, length.out = 1000))
-
-ggplot(data = samples, aes(x = x,
-                           y = samples))+
-  geom_line(colour = "yellow") +
-  labs(y = "density",
-       x = "lambda") +
-  BES_theme()
-
-
-ggsave("BES_lnorm.png", last_plot(), width = 10, height = 10, units = "cm", 
-       dpi = 300)
-
-# how many of the full propagation results are different direction to mean?
-
-reference <- plot_results$lambda[which(plot_results$matrix_name == "matrix1" &
-                                         plot_results$propagation_type == "no \npropagation")] >= 1
-
-filter(plot_results, matrix_name == "matrix1",
-       uncertainty_level == "mean") %>%
-  mutate(checker = lambda >= 1,
-         checker2 = checker == reference) %>%
-  group_by(propagation_type, checker2) %>%
-  summarise(count = (n()/1000)*100)
-
-#### BES FIGURE1: matrix 1: Fecundity biased results ####
-
-Figure_1_data <- filter(plot_results,
-                        uncertainty_level == "mean" |
-                          is.na(uncertainty_level),
-                        matrix_name == "matrix1") %>%
-  bind_rows(filter(plot_results,
-                   propagation_type == "no \npropagation",
-                   matrix_name == "matrix1"), filter(plot_results,
-                                       propagation_type == "no \npropagation",
-                                       matrix_name == "matrix1"))
-
-Figure_1A <- ggplot() +
-#  geom_hline(yintercept = c(quantile(filter(Figure_1_data,
-#                                            propagation_type == "full \npropagation")$lambda,
-#                                     probs = c(0.25, 0.5, 0.75))),
-#             colour = "grey50") + 
-  geom_hline(yintercept = 1, linetype = "dashed", colour = "white") +
-  geom_violin(data = Figure_1_data, 
-              aes(x = propagation_type, 
-                  y = lambda, fill = propagation_type, 
-                  colour = propagation_type),
-              draw_quantiles = c(0.025, 0.5, 0.975),
-              scale = "width") +
-  scale_fill_manual(values = c(colours[1], "transparent",
-                    "transparent", "transparent")) +
-  scale_color_manual(values = c(colours[1], "transparent", 
-                                "transparent", "transparent"))+
-  labs(x = "",
-       y = "Population growth rate") +
-  ylim(c(0.3,1.1)) +
-  BES_theme() +
-  theme(legend.position = "none")
+#### FIGURE 1: 2x2 - breed once ####
   
-Figure_1B <- ggplot() +
-  geom_hline(yintercept = c(quantile(filter(Figure_1_data,
-                                            propagation_type == "full \npropagation")$lambda,
+Figure_1 <- ggplot() +
+  geom_hline(yintercept = c(quantile(filter(plot_results,
+                                            prop_scenario == "full \npropagation")$lambda,
                                      probs = c(0.025, 0.5, 0.975))),
-             colour = "grey50", size = 2) + 
-  geom_hline(yintercept = 1, linetype = "dashed", colour = "white") +
-  geom_violin(data = Figure_1_data, 
-              aes(x = propagation_type, 
-                  y = lambda, fill = propagation_type, 
-                  colour = propagation_type),
-              draw_quantiles = c(0.025, 0.5, 0.975),
+             colour = "grey50", linewidth = 1) + 
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(plot_results,
+                            breeding_stages == "one"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
               scale = "width") +
   scale_fill_manual(values = colours[1:4]) +
-  scale_color_manual(values = c(colours[1],"black",  "white", "white"))+
+  scale_color_manual(values = c(colours[1], "black", colours[3:4]))+
   labs(x = "",
        y = "Population growth rate") +
-  ylim(c(0.3,1.1)) +
-  BES_theme() +
-  theme(legend.position = "none")
+  facet_grid(rows = vars(matrix_number),
+             cols = vars(uncertainty_level)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,5)
 
-Figure_1A
+Figure_1
 
-ggsave("BES_Fig1A.png", last_plot(), width = 15, height = 15, units = "cm", 
+ggsave("Figure_2x2_breed_once.png", last_plot(), width = 15, height = 25, units = "cm", 
        dpi = 300)
 
-Figure_1B
+#### FIGURE 2: 2x2 - breed multiple ####
 
-ggsave("BES_Fig1B.png", last_plot(), width = 15, height = 15, units = "cm", 
+# re-order the factor levels
+plot_results_temp <- bind_rows(filter(two_by_two_results,
+                                      uncertainty_level != "none",
+                                      breeding_stages == "multiple"), 
+                               filter(two_by_two_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 1)[1:30,],
+                               filter(two_by_two_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 2)[1:30,],
+                               filter(two_by_two_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 3)[1:30,],
+                               filter(two_by_two_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 4)[1:30,],
+                               filter(two_by_two_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 5)[1:30,])
+
+plot_results_temp[(nrow(plot_results_temp)-149):nrow(plot_results_temp),
+                  "uncertainty_level"] <-
+  rep(rep(c("high", "mid", "low"), each = 10), 5)
+
+plot_results <- plot_results_temp %>%
+  dplyr::mutate(prop_scenario = as.factor(prop_scenario),
+                prop_scenario = plyr::revalue(prop_scenario, 
+                                              c("f_only"="fecundity \nonly", 
+                                                "s_only"="survival \nonly",
+                                                "full" = "full \npropagation",
+                                                "none" = "no \npropagation")),
+                prop_scenario = fct_relevel(prop_scenario, 
+                                            "no \npropagation",
+                                            "full \npropagation",
+                                            "fecundity \nonly",
+                                            "survival \nonly"),
+                uncertainty_level = as.factor(uncertainty_level),
+                uncertainty_level = fct_relevel(uncertainty_level,
+                                                "low",
+                                                "mid",
+                                                "high")) %>%
+  filter(uncertainty_level != "none") 
+
+Figure_2 <- ggplot() +
+  geom_hline(yintercept = c(quantile(filter(plot_results,
+                                            prop_scenario == "full \npropagation")$lambda,
+                                     probs = c(0.025, 0.5, 0.975))),
+             colour = "grey50", linewidth = 1) + 
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(plot_results,
+                            breeding_stages == "multiple"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours[1:4]) +
+  scale_color_manual(values = c(colours[1], "black", colours[3:4]))+
+  labs(x = "",
+       y = "Population growth rate") +
+  facet_grid(rows = vars(matrix_number),
+             cols = vars(uncertainty_level)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,5)
+
+Figure_2
+
+ggsave("Figure_2x2_breed_multiple.png", last_plot(), width = 15, height = 25, units = "cm", 
        dpi = 300)
 
 #### BES FIGURE2: matrix 2: survival dominant results ####
