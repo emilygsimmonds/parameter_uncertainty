@@ -30,7 +30,8 @@ parametric_bootstrap_function <- function(mean_matrix,
                                                               "one"),
                                           uncertainty_level = c("none", "low", 
                                                                 "mid", 
-                                                                "high")){
+                                                                "high"),
+                                          seed = NULL){
 # set up new matrix to store results
 new_matrix <- mean_matrix
 
@@ -41,6 +42,7 @@ if(uncertainty_fecundity != "NULL"){
 # identify which elements of matrix have non-zero entries for fecundity
 marker <- which(mean_matrix[1,] != 0)
   
+if(!is.null(seed)){set.seed(seed)}
 new_matrix[1,marker] <- lnorms(1, 
                          mean_matrix[1,marker], 
                          (mean_matrix[1,marker]*as.numeric(uncertainty_fecundity))^2)}
@@ -56,13 +58,15 @@ uncertainty_survival <- as.numeric(uncertainty_survival)
 
 # do this in a loop so we can check each entry
 for(i in 1:length(marker2)){
-if(uncertainty_survival^2 >= (1-mean_matrix[-1,marker2[i]])*mean_matrix[-1,marker2[i]]) # need to check stdev not too high
-{uncertainty_survival2 <- sqrt(((1-mean_matrix[-1,marker2[i]])*mean_matrix[-1,marker2[i]]))-0.1}else{ # if it is, set to max possible
+if(uncertainty_survival^2 >= (1-mean_matrix[-1,][marker2[i]])*mean_matrix[-1,][marker2[i]]) # need to check stdev not too high
+{uncertainty_survival2 <- sqrt(((1-mean_matrix[-1,][marker2[i]])*mean_matrix[-1,][marker2[i]]))-0.1}else{ # if it is, set to max possible
 uncertainty_survival2 <- uncertainty_survival}
+
+if(!is.null(seed)){set.seed(seed)}  
   
-  new_matrix[2:length(mean_matrix[,1]), marker2[i]] <- 
-    betaval(mean_matrix[-1,marker2[i]], 
-            mean_matrix[-1,marker2[i]]*uncertainty_survival2)}}
+  new_matrix[2:length(mean_matrix[,1]),][marker2[i]] <- 
+    betaval(mean_matrix[-1,][marker2[i]], 
+            mean_matrix[-1,][marker2[i]]*uncertainty_survival2)}}
   
 lambda <- popdemo::eigs(new_matrix, what = "lambda")
 

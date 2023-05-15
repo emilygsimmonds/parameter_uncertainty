@@ -12,6 +12,7 @@ library(tidyverse)
 
 # vital rates
 vital_rates <- read.csv("./Data files/vital_rates.csv", header = TRUE)
+vital_rates_no_uncert <- read.csv("./Data files/vital_rates_no_uncert.csv", header = TRUE)
 
 # comadre working data
 
@@ -32,6 +33,7 @@ vital_rates_editted <- vital_rates %>%
                                str_detect(Vital.rate, "fecundity") ~ TRUE,
                                str_detect(Vital.rate, "fertility") ~ TRUE,
                                str_detect(Vital.rate, "survival") ~ FALSE,
+                               str_detect(Vital.rate, "stasis") ~ FALSE,
                                Fecundity == TRUE ~ TRUE,
                                TRUE ~ NA)) %>%
   drop_na(Fecundity) %>%
@@ -64,7 +66,7 @@ which(vital_rates_editted2$proportion > 1)
 
 # then calculate summaries of the proportional error
 Uncertainty_summary <- vital_rates_editted2 %>% # then calculate each as a proportion of the mean estimate
-  group_by(Fecundity) %>% summarise(lower = quantile(proportion, probs=(0.25),na.rm =TRUE), 
+  group_by(Fecundity) %>% summarise(lower = quantile(proportion, probs=(0.025),na.rm =TRUE), 
                                     median = median(proportion, na.rm = TRUE),
                                     upper = quantile(proportion, probs=(0.975),na.rm =TRUE), 
                                     count = n()) # take 1st and 3rd quartiles 
@@ -75,3 +77,33 @@ Uncertainty_summary <- vital_rates_editted2 %>% # then calculate each as a propo
 write.csv(Uncertainty_summary, 
           file = "./Data files/Uncertainty_summary.csv", 
           row.names = FALSE)
+
+################################################################################
+
+#### sample size for direct calculation parameters ####
+
+reduced_vital_rates <- vital_rates %>% 
+  filter(str_detect(Method.of.estimation, "direct calculation"),
+         Sample.size != "can't tell" &
+           Sample.size != "not clear" &
+           Sample.size != "not reported") 
+
+length(unique(reduced_vital_rates$DOI)) # 16 papers that also reported uncertainty have sample size
+
+reduced_vital_rates2 <- vital_rates %>% 
+  filter(str_detect(Method.of.estimation, "direct calculation"),
+         Sample.size == "can't tell" |
+           Sample.size == "not clear" |
+           Sample.size == "not reported") 
+
+length(unique(reduced_vital_rates2$DOI)) # 20 with no sample size but do have sampling uncertainty
+
+reduced_vital_rates_no_uncert <- vital_rates_no_uncert %>% 
+  filter(str_detect(Method.of.estimation, "direct calculation"),
+         Sample.size != "can't tell" &
+           Sample.size != "not clear" &
+           Sample.size != "not reported") 
+
+length(unique(reduced_vital_rates_no_uncert$DOI)) # 2 papers with no uncertainty but with sample size
+
+16+20+2 # 38 papers in total - plenty to do analysis

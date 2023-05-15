@@ -16,7 +16,7 @@ library(maps)     # for plotting world map
 
 #fetch the comadre database
 
-comadre <- cdb_fetch('comadre')
+comadre <- cdb_fetch("COMADRE_v.4.21.8.0.RData")
 
 #### Subset to useful matrices ####
 
@@ -49,6 +49,8 @@ comadre_combined <- comadre %>% filter(as.numeric(YearPublication) > 2009,
                                       DOI_ISBN != "NA") %>% 
                             cdb_flag() %>%
                             filter(check_NA_A == FALSE)
+
+length(unique(comadre_combined$DOI_ISBN))
 
 save(comadre_combined, file = "./Data files/working_comadre.RData")
 
@@ -250,7 +252,7 @@ breed_all_55 <- summaries_552 %>% filter(all == TRUE) %>% arrange(ratio)
 
 markers <- c(0.125, 0.25, 0.5, 0.75, 0.875)
 
-breed_once_matrices_55 <- breed_once_55[round(length(breed_once_55[,1])*markers),]$index
+breed_once_matrices_55 <- breed_once_55[c(1,round(length(breed_once_55[,1])*markers[2:5])),]$index
 
 breed_all_matrices_55 <- breed_all_55[round(length(breed_all_55[,1])*markers),]$index
 
@@ -259,7 +261,7 @@ to_save <- matrices_55[breed_all_matrices_55]
 save(to_save, 
      file = "./Data files/fivebyfive_breed_all.RData")
 
-to_save <- matrices_55[breed_once_matrices_55]
+to_save <- matrices_55[breed_once_matrices_55] # use matrix 13 not 69 as 69 seems to have error as has survival of 1
 
 save(to_save, 
      file = "./Data files/fivebyfive_breed_once.RData")

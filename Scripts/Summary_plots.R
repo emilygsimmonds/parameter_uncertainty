@@ -27,11 +27,19 @@ vital_rates <- read.csv('./Data files/vital_rates.csv', header = TRUE)
 
 #### Summaries ####
 
-length(unique(general_questions$DOI)) # 86 
+length(unique(general_questions$DOI)) # 117 
 
 number_papers <- general_questions %>%
   filter(Number == 1,
-         Answer1 == "yes") 
+         Answer1 == "yes")  
+
+length(unique(number_papers$DOI))
+
+number_papers <- general_questions %>%
+  filter(Number == 1,
+         Answer1 == "no") 
+
+length(unique(number_papers$DOI))
 
 ### HOW MANY REPORT ANY UNCERTAINTY? ####
 
@@ -47,7 +55,7 @@ general_questions %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 18.7 no, 81.3 yes
+# 19.2 no, 80.8 yes
 
 
 ### WAS UNCERTAINTY COMPLETE? ####
@@ -64,7 +72,7 @@ general_questions %>%
   ungroup()   %>%
   mutate(position = (Perc/2))
 
-# 46.8 no, 53.2 yes
+# 49.4 no, 50.6 yes
 
 ### WHICH WERE MISSED? ####
 
@@ -78,8 +86,8 @@ general_questions %>%
   group_by(Missing_F, Missing_S) %>%
   dplyr::summarize(count = n())
 
-# most missing both (13/29)
-# then missing S and F almost equal 7 vs 8 
+# most missing both (22/42)
+# then missing S and F almost equal 9 vs 10 
 
 general_questions %>%
   filter(Number == 3,
@@ -89,7 +97,7 @@ general_questions %>%
   dplyr::summarize(count = n()) %>%
   mutate(percentage = count/sum(count))
 
-# % with survival observation process 47.8%
+# % with survival observation process 43.5%
 
 general_questions %>%
   filter(Number == 4,
@@ -99,7 +107,7 @@ general_questions %>%
   dplyr::summarize(count = n()) %>%
   mutate(percentage = count/sum(count))
 
-# % with fecundity observation process 11.4%
+# % with fecundity observation process 10.4%
 
 ### WAS IT PROPAGATED ####
 
@@ -121,7 +129,7 @@ vital_rates %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 25.4 no, 74.6 yes
+# 20.4 no, 79.6 yes
 
 # by paper
 Propagated_uncertainty_paper <- vital_rates %>%
@@ -144,30 +152,72 @@ Propagated_uncertainty_paper <- vital_rates %>%
 length(which(Propagated_uncertainty_paper$paper_count == 0))/
   length(Propagated_uncertainty_paper$paper_count)
 
-# 20% propagate no uncertainty
+# 19.7% propagate no uncertainty
 
 #### HOW MANY LAMBDAS WITH UNCERTAINTY CROSS 1? ####
 
 lambda_checks <- vital_rates %>%
   filter(!Estimate %in% c("not reported", "Can't find it") &
-         !Uncertainty1 %in% c("not reported", "Can't find it") &
-         Uncertainty2 != "Can't find it",
+           !Uncertainty1 %in% c("not reported", "Can't find it") &
+           Uncertainty2 != "Can't find it",
+         Uncertainty.type == "standard error" | 
+           Uncertainty.type == "confidence interval" |
+           Uncertainty.type == "credible interval" |
+           Uncertainty.type != "standard deviation",
+         Uncertainty1 > 0,
          Vital.rate == "lambda") %>%
   mutate(Estimate = as.numeric(Estimate),
          Uncertainty1 = as.numeric(Uncertainty1),
-         Uncertainty2 = as.numeric(Uncertainty2)) %>%
+         Uncertainty2 = case_when(Uncertainty.type == "standard error" ~ Estimate + (2*Uncertainty1),
+                                  TRUE ~ as.numeric(Uncertainty2)),
+         Uncertainty1 = case_when(Uncertainty.type == "standard error" ~ Estimate - (2*Uncertainty1),
+                                  TRUE ~ as.numeric(Uncertainty1))) %>%
   mutate(cross1 = case_when(Uncertainty1 < 1 & Uncertainty2 > 1
-                               ~ TRUE,
-                            TRUE ~ FALSE)) %>%
+                            ~ TRUE,
+                            Uncertainty1 < 1 & Uncertainty2 < 1 
+                            ~ FALSE,
+                            Uncertainty1 > 1 & Uncertainty2 > 1 
+                            ~ FALSE,
+                            TRUE ~ NA))
+
+lambda_checks %>%
   group_by(cross1) %>%
-  summarise(count = n()) # 19/(19+37) = 33.9 %
+  summarise(count = n()) 
+
+lambda_checks # 37/(37+50) = 42.5 %
 
 # and what uncertainty went into them? I.e. split by complete, F or S
 
-# do the elasticities change if you take lower and upper CI instead of mean?
+lambda_checks$DOI[which(lambda_checks$cross1 == TRUE)]
+
+reduced_general_questions <- filter(general_questions, Number == 6)
+
+reduced_general_questions[reduced_general_questions$DOI %in% lambda_checks$DOI[which(lambda_checks$cross1 == TRUE)],]
+
+# vast majority have complete uncertainty
+
+#### Uncertainty types ####
+
+Uncertainty_types <- vital_rates %>%
+  filter(!is.na(Uncertainty.type),
+         Uncertainty.type != "not reported" &
+           Uncertainty.type != "can't tell" &
+           Uncertainty.type != "can't find it" &
+           Uncertainty.type != "missing" &
+           Uncertainty.type != "none but could have been - components used to estimate it had SE" &
+           Uncertainty.type != "not reported: maybe standard deviation") %>%
+group_by(Uncertainty.type) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count/sum(count))
+
+# SE = 37.7%, Confidence Interval = 24%, standard deviation = 21.9%,
+# credible interval 6%, process variance = 3.7%
 
 
-
-
-
-
+general_questions %>%
+  filter(Number == 10) %>%
+  group_by(Answer1) %>%
+  dplyr::summarize(count = n()) %>%
+  dplyr::mutate(Perc = count/sum(count)) %>%
+  ungroup()   %>%
+  mutate(position = (Perc/2))
