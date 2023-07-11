@@ -41,6 +41,18 @@ number_papers <- general_questions %>%
 
 length(unique(number_papers$DOI))
 
+length(unique(vital_rates$DOI)) # now both match at 82
+
+number_papers <- general_questions %>%
+  filter(Number == 5,
+         Answer1 == "yes") 
+
+length(unique(number_papers$DOI))
+
+#unique(vital_rates$DOI)[!unique(vital_rates$DOI) %in% unique(number_papers$DOI)] 
+
+#unique(number_papers$DOI)[!unique(number_papers$DOI) %in% unique(vital_rates$DOI)]
+
 ### HOW MANY REPORT ANY UNCERTAINTY? ####
 
 # filter the data, group, and summarise as %
@@ -55,7 +67,7 @@ general_questions %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 19.2 no, 80.8 yes
+# 21.9 no, 78.1 yes
 
 
 ### WAS UNCERTAINTY COMPLETE? ####
@@ -72,7 +84,7 @@ general_questions %>%
   ungroup()   %>%
   mutate(position = (Perc/2))
 
-# 49.4 no, 50.6 yes
+# 47.6 no, 52.4 yes
 
 ### WHICH WERE MISSED? ####
 
@@ -86,8 +98,8 @@ general_questions %>%
   group_by(Missing_F, Missing_S) %>%
   dplyr::summarize(count = n())
 
-# most missing both (22/42)
-# then missing S and F almost equal 9 vs 10 
+# most missing both (20/39)
+# then missing S and F almost equal 9 vs 9 
 
 general_questions %>%
   filter(Number == 3,
@@ -97,7 +109,7 @@ general_questions %>%
   dplyr::summarize(count = n()) %>%
   mutate(percentage = count/sum(count))
 
-# % with survival observation process 43.5%
+# % with survival observation process 44%
 
 general_questions %>%
   filter(Number == 4,
@@ -107,7 +119,7 @@ general_questions %>%
   dplyr::summarize(count = n()) %>%
   mutate(percentage = count/sum(count))
 
-# % with fecundity observation process 10.4%
+# % with fecundity observation process 10.5%
 
 ### WAS IT PROPAGATED ####
 
@@ -129,9 +141,9 @@ vital_rates %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 20.4 no, 79.6 yes
+# 21.2 no, 78.8 yes
 
-# by paper
+# by paper - yes and no only
 Propagated_uncertainty_paper <- vital_rates %>%
   filter(!is.na(Uncertainty1)) %>%
   mutate(Propagated.to.final.matrix. = 
@@ -139,7 +151,36 @@ Propagated_uncertainty_paper <- vital_rates %>%
                      Propagated.to.final.matrix. == "not sure" ~ "can't tell",
                      TRUE ~ Propagated.to.final.matrix.)) %>%
   filter(Propagated.to.final.matrix. == "yes" |
-           Propagated.to.final.matrix. == "no") %>%
+           Propagated.to.final.matrix. == "no" |
+           Propagated.to.final.matrix. == "can't tell",
+         Vital.rate != str_detect(Vital.rate, "lambda") &
+           Vital.rate != str_detect(Vital.rate, "population")) %>% # remove all entries that are NA and remove all derived quantities
+  group_by(DOI, Propagated.to.final.matrix.) %>%
+  summarise(paper_count = n()) %>%
+  mutate(percent = paper_count/sum(paper_count)) %>%
+  ungroup() %>%
+  complete(Propagated.to.final.matrix., nesting(DOI), # add in rows that are missing
+           fill = list(percent = 0,
+                       paper_count = 0)) %>%
+  group_by(DOI, Propagated.to.final.matrix.) %>%
+  filter(Propagated.to.final.matrix. == "yes") %>%
+  mutate(Propagation.type = case_when(percent == 1 ~ "all",
+                                       percent < 1 & percent > 0 ~ "some",
+                                       percent == 0 ~ "none", 
+                                       TRUE ~ "none"))
+
+# get a list of papers for which we can't tell
+Unclear <- vital_rates %>%
+  filter(!is.na(Uncertainty1)) %>%
+  mutate(Propagated.to.final.matrix. = 
+           case_when(Propagated.to.final.matrix. == "bootstrapped" ~ "yes",
+                     Propagated.to.final.matrix. == "not sure" ~ "can't tell",
+                     TRUE ~ Propagated.to.final.matrix.)) %>%
+  filter(Propagated.to.final.matrix. == "yes" |
+           Propagated.to.final.matrix. == "no" |
+           Propagated.to.final.matrix. == "can't tell",
+         Vital.rate != str_detect(Vital.rate, "lambda") &
+           Vital.rate != str_detect(Vital.rate, "population")) %>% # remove all entries that are NA and remove all derived quantities
   group_by(DOI, Propagated.to.final.matrix.) %>%
   summarise(paper_count = n()) %>%
   mutate(percent = paper_count/sum(paper_count)) %>%
@@ -147,12 +188,54 @@ Propagated_uncertainty_paper <- vital_rates %>%
   complete(Propagated.to.final.matrix., nesting(DOI), # add in rows that are missing
            fill = list(paper_count = 0)) %>%
   group_by(DOI, Propagated.to.final.matrix.) %>%
-  filter(Propagated.to.final.matrix. == "yes") 
+  filter(Propagated.to.final.matrix. == "can't tell" &
+           percent > 0) %>%
+  mutate(Propagation.type = "can't tell")
+
+# rename columns of unclear so it can be joined
+Unclear <- Unclear[,-c(1,3,4)]
+colnames(Unclear) <- c("DOI", "Clarity")
+
+# combine with general questions data
+combined_data <- left_join(general_questions,
+                           Propagated_uncertainty_paper,
+                           by = c("DOI"))
+combined_data <- left_join(combined_data,
+                           Unclear,
+                           by = c("DOI")) %>%
+  mutate(Propagation.type = case_when(Clarity == "can't tell" ~ Clarity,
+                                      TRUE ~ Propagation.type))
 
 length(which(Propagated_uncertainty_paper$paper_count == 0))/
   length(Propagated_uncertainty_paper$paper_count)
 
-# 19.7% propagate no uncertainty
+#### How many papers that have complete uncertainty propagate it
+
+combined_data %>%
+  filter(Number == 6,
+         Answer1 == "yes") %>%
+  drop_na(Propagation.type) %>%
+  group_by(Propagation.type) %>%
+  dplyr::summarize(count = n()) %>%
+  dplyr::mutate(Perc = count/sum(count)) %>%
+  ungroup() %>%
+  mutate(position = (Perc/2))
+
+# 79.1% all, 7% none, 2.3% some, 11.6 % can't tell
+
+# or with incomplete uncertainty
+
+combined_data %>%
+  filter(Number == 6 &
+         Answer1 == "no") %>%
+  drop_na(Propagation.type) %>%
+  group_by(Propagation.type) %>%
+  dplyr::summarize(count = n()) %>%
+  dplyr::mutate(Perc = count/sum(count)) %>%
+  ungroup() %>%
+  mutate(position = (Perc/2))
+
+# 39.1% all, 39.1% none, 13% some, 8.7% can't tell # of 16 as some will be missing all vital rates
 
 #### HOW MANY LAMBDAS WITH UNCERTAINTY CROSS 1? ####
 
@@ -212,7 +295,6 @@ group_by(Uncertainty.type) %>%
 
 # SE = 37.7%, Confidence Interval = 24%, standard deviation = 21.9%,
 # credible interval 6%, process variance = 3.7%
-
 
 general_questions %>%
   filter(Number == 10) %>%

@@ -1,0 +1,851 @@
+---
+title: "Guidelines for parameter uncertainty propagation in matrix population models"
+author: "Emily Simmonds"
+date: "2023-03-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# load packages
+library(tidyverse)
+library(patchwork)
+
+# source script
+
+source("./Scripts/theme_script.R")
+
+# load all summary data
+
+load("./Data files/two_by_two_results.RData")
+load("./Data files/three_by_three_results.RData")
+load("./Data files/five_by_five_results.RData")
+
+# join together all datasets
+full_data <- bind_rows(two_by_two_results,
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 1)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 2)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 3)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 4)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "one",
+                                 matrix_number == 5)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "multiple",
+                                 matrix_number == 1)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "multiple",
+                                 matrix_number == 2)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "multiple",
+                                 matrix_number == 3)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "multiple",
+                                 matrix_number == 4)[1:30,],
+                          filter(two_by_two_results,
+                                 uncertainty_level == "none",
+                                 breeding_stages == "multiple",
+                                 matrix_number == 5)[1:30,],
+                       three_by_three_results,
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 1)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 2)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 3)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 4)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 5)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 1)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 2)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 3)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 4)[1:30,],
+                               filter(three_by_three_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 5)[1:30,],
+                       five_by_five_results,
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 1)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 2)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 3)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 4)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "one",
+                                      matrix_number == 5)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 1)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 2)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 3)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 4)[1:30,],
+                               filter(five_by_five_results,
+                                      uncertainty_level == "none",
+                                      breeding_stages == "multiple",
+                                      matrix_number == 5)[1:30,]) %>%
+  mutate(matrix_size = c(rep("size 2", length(two_by_two_results[,1])+300),
+                         rep("size 3", length(three_by_three_results[,1])+300),
+                         rep("size 5", length(five_by_five_results[,1])+300)))
+
+# then add labels for low, mid, high uncertainty to those added rows
+full_data[c(seq(1005882, 1005882+299, 1), 
+            seq(1005882+299+1005426, 1005882+299+1005426+299, 1),
+            seq(1005882+299+1005426+299+1028936, 1005882+299+1005426+299+1028936+299, 1)),
+                  "uncertainty_level"] <-
+  rep(rep(rep(c("high", "mid", "low"), each = 10), 5),6)
+
+# then rename factors
+full_data <- full_data %>%
+  dplyr::mutate(prop_scenario = as.factor(prop_scenario),
+                prop_scenario = plyr::revalue(prop_scenario, 
+                                           c("f_only"="fecundity \nonly", 
+                                             "s_only"="survival \nonly",
+                                             "full" = "full \npropagation",
+                                             "none" = "no \npropagation")),
+                prop_scenario = fct_relevel(prop_scenario, 
+                                     "no \npropagation",
+                                     "full \npropagation",
+                                     "fecundity \nonly",
+                                     "survival \nonly"),
+                uncertainty_level = as.factor(uncertainty_level),
+                uncertainty_level = fct_relevel(uncertainty_level,
+                                                "low",
+                                                "mid",
+                                                "high")) %>%
+  filter(uncertainty_level != "none")
+
+###############################################################################
+
+colours_scenario <- c("#540B0E","#E8E8E8","#444E60","#A1Acc0")
+
+colfunc<-colorRampPalette(c("white", "orangered"))
+
+colours_size <- colfunc(5)
+
+```
+
+## Introduction
+
+* Uncertainty is a fundamental part of the scientific process as a whole but is 
+particularly important in statistical modelling. Uncertainty enters the modelling process at 
+many levels from input data, parameter estimates, model choice,
+and even the language we use to interpret our results (Regan, Simmonds 2022, 
+etc). All of these sources of uncertainty must be acknowledged, accounted
+for, and propagated through the modelling process to give a complete picture of the 
+uncertainty associated with our work. A failure to correctly estimate and report 
+uncertainty can lead to overconfidence in results and at worst, incorrect 
+conclusions and loss of credibility (Palliser and Dodson, COVID paper). 
+
+* Correct uncertainty quantification and propagation is especially pertinent for
+predictive ecological models. In predictive models the sources of model-related
+uncertainty can increase as there are several steps taken (and often multiple 
+models used) to generate predictions. Furthermore, the outputs of such models 
+can more directly inform action as did the predictive models used during
+the COVID pandemic (CITE) or in fisheries management (CITE). When models are used
+to inform action, the consequences of incorrect or incomplete uncertainty 
+consideration are exceptionally high as they can cause sub-optimal action which 
+can cost money (CITE) or at worst cost lives (COVID example, conservation 
+example). Therefore, in predictive models it is essential that uncertainty from
+earlier modelling steps be propagated through to final predictions to give as 
+complete a picture of the uncertainty associated with those predictions as possible. 
+
+* One type of model that is prominent in ecological predictions is the matrix
+population model (MPM) (Caswell 2012, cite examples of prediction). 
+These models are composed of vital rates organised by 
+age or stage and project derived population level metrics, such as population 
+growth rate (lambda). MPMs have been used to explore the population dynamics of
+at least XXX plant and XXX animal species (cite COMPADRE) and are widely used for 
+comparative analyses across taxa (CITE). MPMs are often composite 
+models as statistical models or calculations (such as survival analysis, 
+linear models, or calculations of central tendency) are 
+used to estimate the vital rates, which form the basis of the matrix used for 
+projection, the MPM. It is well known and well specified in the theoretical 
+grounding of MPMs (Caswell), 
+that uncertainty in the vital rates that make up these models and their propagation
+are vitally important. The estimates used in MPMs are based (typically) on 
+imperfect data and estimated using statistical models, therefore, the estimates
+themselves are uncertain (Caswell 2012). Caswell even states (cite)
+"uncertainty is as much a part of the result as the estimate itself". 
+Consequently, metrics of uncertainty for the vital rates
+should be propagated into projections, derived quantities, and any further 
+comparative analyses based on these models. However, the extent to which this is 
+currently achieved is an open question. 
+
+* We now have many tools to fit, run, and access MPMs (CITE). One excellent 
+example is the open access repository COMPADRE and its associated R tools. 
+This is valuable repository that has collated thousands of published MPMs into a 
+single place, including consistent meta-data. Such a collection has clearly 
+advanced the field of predictive ecological modelling by allowing the 
+running of broad comparative analyses that would have been prohibitively time
+consuming without MPMs collected in a standardised format. Repositories such as
+COMPADRE and DatLife etc. also permit easy access to open source data. 
+However, at this time these repositories do not include any metrics of 
+uncertainty associated with the underlying parameters of these matrices or their
+derived quantities. This makes full propagation of uncertainty impossible
+without deriving uncertainty estimates from the original publication. 
+For wide scale analyses across
+hundreds or thousands of populations, this could be a prohibitively time 
+consuming step. 
+
+* Given the lack of uncertainty stored in these open source repositories, this
+opens up a question of why it is not included. Is it because the uncertainty is
+not reported in the original papers? Or if it is, is it reported in a way that
+can be easily standardised and stored? Recent work has suggested that the presentation
+of published MPMs is highly inconsistent, often lacking the necessary information
+to repeat an analysis (cite Samuel Gascoigne paper). This could suggest uncertainty
+reporting is also inconsistent or lacking for these publications. 
+
+* There could also be a question of how important vital rate uncertainties are
+for the estimation and interpretation of derived parameters, such as lambda or 
+in comparative analyses. Intuitively, one could always assume uncertainty is 
+important as it is necessary to have truly clear, transparent science. However,
+unless the uncertainty alters a conclusion, it might not have a material difference
+on the outcome of a study, therefore bringing the realised importance into question.
+Furthermore, in large scale comparative analyses it could be assumed that the 
+uncertainty in vital rates will be very small compared to other variation in the
+analysis, therefore having minimal influence on the inference of the study (CITE).
+
+* In this paper we ask four specific questions with the aim to understand in tandem,
+the 
+state-of-the-art of uncertainty reporting for MPMs, and the importance of 
+uncertainty propagation through the modelling process, specifically of 
+parameter-related uncertainties:
+
+1. **How often are vital rate uncertainties reported and propagated in original 
+MPM papers?**
+
+2. **How does propagation of uncertainty alter conclusions of lambda?**
+
+3. **How does matrix size impact propagation impacts?**
+
+4. **How does life history impact the bias of partial propagation?**
+
+## Method
+
+### Review
+
+In order to review how often vital rate uncertainties are reported and propagated
+in papers using MPMs I adopted a systematic, but not exhaustive, approach to 
+paper selection. I focussed specifically on animal studies and used the open source
+COMADRE database (CITE and Link) as a source of papers. Using COMADRE (v. XXXX,
+accessed X 2022), I extracted matrices with a DOI with
+a publication date from and including 2010. This was to restrict my sample to 
+those studies that had gone through peer review. Study duration was filtered to be at least 
+one year. I also excluded any matrices with flagged issues. 
+This gave 122 DOIs that we used to find the original papers to review. 
+Three papers were removed due to lack of access, typically as behind a paywall.
+Two were removed as they were not peer reviewed; one thesis, one technical 
+government report. 12 were not reviewed as they did not contain an MPM. This
+left 105 papers that received full review (see Supplementary Table X).
+
+
+For each paper, 13 general questions were answered that related to model
+structure, species, sample size, and then specific model and uncertainty details.
+These questions were answered for the paper as whole, not for each matrix presented
+in a paper. Generally, all MPMs in a paper were subject to the same level of 
+uncertainty reporting. Where this was not the case, I took a conservative approach
+and answered based on the most comprehensively reported matrix, noting this in the
+comments section of the data collection sheet. 
+In addition, vital rates and any associated uncertainty were recorded and whether
+the uncertainty was propagated (see Supplementary Table X). 
+For uncertainty type, standard deviation was included even though standard deviation
+of observed data is not strictly a measure of uncertainty without scaling by the
+sample size (to become a standard error). This was because some studies did use
+standard deviations as a metric of uncertainty, for example to propagate variability
+into estimates of lambda, or the standard deviation was of a sampling distribution
+not from observed data. 
+
+To assess how often uncertainty was reported question 5 was taken and the percentage
+of yes and no answers for Answer 1 were calculated (NA excluded). To assess the completeness of 
+uncertainty reporting question 6 was taken and the percentage of yes or no
+answers  for Answer 1 were calculated (NA excluded), to determine which vital rates were missing
+for incomplete cases, question 6 Answer 2 was summarised by key words. 
+All of these results are summarised by
+paper not by MPM. To assess propagation of uncertainty to 
+derived quantities such as lambda and to explore the type of uncertainty reported,
+I used the results in Supplementary Table X. 
+This allowed summaries by vital rate and by paper. 
+
+### Simulations
+
+To assess the importance of propagating vital rate uncertainty to estimates of
+population growth rate I used simulations. 
+
+To choose matrices as the basis of the simulations, I took the same sub-set of 
+COMADRE matrices that I used for the basis of the review (all matrices with a DOI since and including 2010, 
+with no flagged errors in the matrices, n = XX).
+The matrices were subset by three size groups, 2x2, 3x3, 5x5. These were further 
+subset by life history to two groups: species that breed only in one stage and
+species that breed in multiple stages (for 2x2 
+and 3x3 this is breeding in all stages but for 5x5 it is breeding in 3 or more 
+stages).
+
+Within each size class I sorted the matrices according to the ratio of fecundity
+elasticities to survival elasticities, giving a ratio of fecundity:survival. 
+Survival dominant matrices had a ratio of < 1 and fecundity dominant matrices
+had a value > 1. Five matrices were then selected for each size class and 
+breeding type from approximately the 12.5th, 25th, 
+50th, 75th and 87.5th percentiles of this ratio. There was one tweak to this 
+methodology for the 5x5 matrices. Very few of these matrices met the
+criteria for breeding in one stage and the matrix that would have
+been selected for the 12.5th percentile had a survival value of 1 for one stage. 
+This is obviously not possible in reality, so instead the preceding matrix 
+sequentially (based on fecundity:survival ratio) was selected instead. These 
+selected matrices therefore covered a range of life history strategies and formed
+the base matrices of estimated vital rates for the simulations.
+
+The next step of the simulations was to add associated vital rate uncertainty to
+each rate in each base matrix. In order to select the uncertainty levels for the 
+simulations, all of the 
+uncertainty reported as either confidence intervals or standard errors from the
+uncertainty review was sorted into 'fecundity' or 'survival' elements - where 
+possible, using matrix position or vital rate name from the original paper. Only
+confidence intervals and standard errors were chosen so as to ensure comparability
+of uncertainty and remove some of the impacts of uncertainty metric. Confidence
+intervals were converted back into standard errors to be used for these simulations.
+To do this I subtracted the estimate of the vital rate from the upper confidence
+interval and divided this by two. This assumes that the confidence interval is 
+approximately symmetrical and on the scale of the estimate. To check this I
+compared the actual lower confidence interval to the estimate minus two times
+the estimated standard error. If the actual confidence interval was within 0.05 of
+the estimated lower confidence interval, it was assumed the symmetry and scale
+assumptions were met, all others were excluded from further analyses. For
+matrix position, row 1 elements were deemed to relate to fecundity and rows greater
+than 1 to relate to survival, unless explicitly named as retrogression. As a result
+some retrogression could be included as fecundity or survival. For vital rate name
+"reproduction", "recruitment", "fecundity", and  "fertility" were all deemed to
+be fecundity associated vital rates and "survival" and "stasis" were deemed to
+be survival related. 
+If it could not be determined if the parameter the uncertainty was
+associated with was fecundity or survival related that uncertainty was omitted. 
+The lower level of uncertainty was taken as the 2.5th percentile of reported
+uncertainties for each vital rate type,
+the mid level was the median, and high is taken as the 97.5th percentile. The 
+upper and lower uncertainty estimates are therefore quite extreme but demonstrate
+the full range of reported uncertainties. 
+
+To investigate how uncertainty impacts results, I conducted parametric
+resampling of each matrix element based on the lower, mid, 
+and upper uncertainty levels for each vital rate type for each of the
+30 matrices, giving 90 total combinations. For the parametric resampling, 
+I used a log-normal distribution for the 
+fecundity parameter (lambda_f) using the popbio package (CITE), which is the rate parameter
+from a Poisson distribution. For survival I used a
+beta distribution to resample the probability parameter from a Binomial distribution
+also using the 
+popbio package. For each resampling, the mean was determined from the base matrix
+vital rate and the variance or standard deviation of the distribution
+was determined using one of the uncertainty levels extracted from the reviewed
+papers. The uncertainty was included as a proportion of the base estimate rather
+than an absolute value, this accounted for the different absolute magnitude of
+the vital rates in each reviewed paper and in the base matrices for the simulations.
+10000 resamples were performed across all parameters simultaneously. 
+
+Uncertainty was propagated from the vital rates to estimates of lambda 
+using this resampling under four scenarios:
+
+  1. no uncertainty - this will be the output from the original base matrix.
+  2. Fecundity only - this is where fecundity elements are resampled but survival are not.
+  3. Survival only - survival elements resampled but fecundity are not.
+  4. Full propagation - all elements resampled at once. 
+  
+The performance metrics assessed were the estimate of population growth rate 
+(lambda) and the dominant elasticity, calculated from each resampled matrix giving
+10000 estimates of each performance metric per base matrix. 
+
+To assess if conclusions were changed, results were characterised into three
+categories: stable (lambda > 0.98 < 1.02), increasing (lambda 1.02 or above),
+decreasing (lambda 0.98 or lower). I then assessed how many of the resampled
+lambdas matched the original conclusion from the base matrix. 
+
+## Results: General review results
+
+Headlines of results from review:
+
+* **80.8 % of papers report some uncertainty**
+
+* **for 49.4 % of papers that report some uncertainty the uncertainty is incomplete**
+for 9 papers it is survival missing and for 10 it is fecundity missing. For 22 papers
+it is both survival and fecundity missing and only uncertainty in derived elements
+reported.
+
+* **80.3 % of papers that report uncertainty propagate some of it**
+
+* **79.6 % of parameters with reported uncertainty are propagated**
+
+* **42.5% of lambdas with reported uncertainty have a confidence/credible interval that spans 1**
+
+* **Large variety in metrics of uncertainty reporting: standard errors = 37.7%, 
+confidence Interval = 24%, standard deviation = 21.9%, credible interval = 6%, 
+process variance = 3.7%** Notes that standard deviation isn't always a true
+measure of uncertainty. Sometimes it did represent the standard deviation of a
+sampling distribution but in other cases it was the standard deviation of the 
+data not corrected for sample size. This was sometimes used to represent
+sampling uncertainty in subsequent bootstrapping or parameteric resampling, but
+this is not necessarily a correct representation of uncertainty in the vital
+rate. 
+
+Around 20% of MPM papers do not report any uncertainty in their vital rates or
+derived quantities. Of those that do report uncertainty, for almost half this 
+uncertainty is incomplete. Therefore, for approximately 40% of MPM papers, full
+propagation of vital rate uncertainty is not possible. However, when uncertainty
+in a vital rate is reported, it is most often propagated with only around 20%
+failing to do this. 
+
+## Results: Impact of different propagation scenarios
+
+Overall, there was a minimal impact of matrix size on the impact of uncertainty
+propagation on conclusions or the bias introduced by partial propagation (see 
+section below for more detail).
+
+### Propagation: by fecundity:survival ratio
+
+Results shown for 3x3 matrix under median uncertainty but across all ratios of
+survival: fecundity. Goes from survival dominant (1) to fecundity dominant (5). 
+
+```{r propagation_fecundity_ratio}
+
+propagation_ratio_1 <- ggplot() +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            uncertainty_level == "mid",
+                            matrix_size == "size 3",
+                            breeding_stages == "one"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed once") +
+  facet_grid(rows = vars(matrix_number)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,2)
+
+propagation_ratio_2 <- ggplot() +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            uncertainty_level == "mid",
+                            matrix_size == "size 3",
+                            breeding_stages == "multiple"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed multiple") +
+  facet_grid(rows = vars(matrix_number)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,2)
+
+propagation_ratio_1 + propagation_ratio_2
+
+```
+*Figure 1: Violin plots of full distribution of lambda estimates from
+resampled matrices. Rows show different base matrices sorted by
+feduncity:survival ratio (1 = survival dominant, 5 = fecundity dominant). 
+All results are for median uncertainty. 
+Dashed line indicates a lambda of 1.*
+
+Results show a shift in the bias caused by partial propagation. Specifically,
+survival dominant matrices have full uncertainty distributions that are 
+mainly controlled by survival uncertainty and fecundity dominant matrices have
+full uncertainty distributions that are mainly controlled by fecundity uncertainty.
+Therefore, omitting survival uncertainty for a survival dominant species would give
+rise to greater bias in the result than omitting fecundity uncertainty and vice versa
+for fecundity dominant species.
+
+Fecundity uncertainty is overall more important for species that breed in multiple
+stages. 
+
+### Elasticity changes
+
+Most scenarios are robust to changes in elasticity. I have highlighted one below
+that sees more variation. This is for species that breed once in a 5x5 matrix under
+both mid and high uncertainty. 
+
+```{r elasticity}
+
+# create reference elasticity dataframe
+elasticity_reference <- full_data %>%
+  filter(prop_scenario == "no \npropagation",
+         uncertainty_level == "low") %>%
+  group_by(matrix_size, breeding_stages, matrix_number, elasticity) %>%
+  summarise(reference = mean(elasticity)) %>%
+  select(-"elasticity")
+
+# summarise the number of different elasticity values for each matrix and each
+# scenario
+
+elasticity_summary <- full_data %>% left_join(elasticity_reference) %>%
+  mutate(elasticity_nochange = (elasticity == reference)) %>%
+  group_by(matrix_size,
+           breeding_stages,
+           matrix_number,
+           prop_scenario,
+           uncertainty_level,
+           elasticity_nochange) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = round((count/sum(count))*100,2)) %>%
+  filter(elasticity_nochange == TRUE) %>%
+  ungroup()
+
+filter(elasticity_summary,
+       matrix_size == "size 5",
+       breeding_stages == "one",
+       uncertainty_level == "mid") %>%
+  select(c("matrix_size",
+           "breeding_stages",
+           "matrix_number",
+           "prop_scenario",
+           "percentage"))
+```
+### Conclusion changes
+
+ 
+```{r conclusion}
+
+# create reference elasticity dataframe
+conclusion_reference <- full_data %>%
+  filter(prop_scenario == "no \npropagation",
+         uncertainty_level == "low") %>%
+  group_by(matrix_size, breeding_stages, matrix_number, lambda) %>%
+  summarise(reference = mean(lambda)) %>%
+  mutate(conclusion = case_when(reference > 0.98 & reference < 1.02 ~ "stable",
+                                reference > 1.01 ~ "increasing",
+                                reference < 0.99 ~ "decreasing")) %>%
+  select(-"lambda")
+
+# summarise the number of different elasticity values for each matrix and each
+# scenario
+
+conclusion_summary <- full_data %>% left_join(conclusion_reference) %>%
+  mutate(lambda_trend = case_when(lambda > 0.98 & lambda < 1.02 ~ "stable",
+                                lambda > 1.01 ~ "increasing",
+                                lambda < 0.99 ~ "decreasing"),
+         conclusion_change = lambda_trend == conclusion) %>%
+  group_by(matrix_size,
+           breeding_stages,
+           matrix_number,
+           prop_scenario,
+           uncertainty_level,
+           conclusion_change) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = round((count/sum(count))*100,2)) %>%
+  filter(conclusion_change == TRUE) %>%
+  ungroup()
+
+conclusion_plot <- ggplot()+
+  geom_col(data = filter(conclusion_summary,
+                         uncertainty_level == "mid",
+                         matrix_size == "size 3"),
+           aes(y = 100-percentage,
+               x = prop_scenario,
+               colour = prop_scenario,
+               fill = prop_scenario))+
+  facet_grid(rows = vars(matrix_number),
+             cols = vars(breeding_stages))+
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Percentage of times conclusion changed",
+       title = "Conclusion changes") +
+  plain_theme() +
+  theme(legend.position = "none") 
+
+conclusion_plot
+
+```
+
+See conclusion changes across all matrices
+
+### Propagation: by matrix size
+
+Results shown for matrix 3 for species that breed once and multiple times, 
+both with mid level uncertainty. 
+
+Results shown for all three matrix sizes. 
+
+```{r propagation_matrix_size}
+
+propagation_matrix_size_1 <- ggplot() +
+# geom_hline(yintercept = c(quantile(filter(full_data,
+#                                           prop_scenario == "full \npropagation",
+#                                           uncertainty_level == "mid",
+#                                           matrix_number == 3,
+#                                           breeding_stages == "one")$lambda,
+#                                    probs = c(0.025, 0.5, 0.975))),
+#            colour = "grey50", linewidth = 0.5) + 
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            uncertainty_level == "mid",
+                            matrix_number == 3,
+                            breeding_stages == "one"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed once") +
+  facet_grid(rows = vars(matrix_size)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,1.5)
+
+propagation_matrix_size_2 <- ggplot() +
+# geom_hline(yintercept = c(quantile(filter(full_data,
+#                                           prop_scenario == "full \npropagation",
+#                                           uncertainty_level == "mid",
+#                                           matrix_number == 3,
+#                                           breeding_stages == "multiple")$lambda,
+#                                    probs = c(0.025, 0.5, 0.975))),
+#            colour = "grey50", linewidth = 0.5) + 
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            uncertainty_level == "mid",
+                            matrix_number == 3,
+                            breeding_stages == "multiple"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed multiple") +
+  facet_grid(rows = vars(matrix_size)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,1.5)
+
+propagation_matrix_size_1 + propagation_matrix_size_2
+
+```
+*Figure X: Violin plots of full distribution of lambda estimates from
+resampled matrices. Rows show different matrix sizes. All results are for matrix
+3 - balanced fecunidity:survival ratio and for median uncertainty. 
+Dashed line indicates a lambda of 1.*
+
+Results show how partial propagation can deviate from full propagation of uncertainty.
+This is particularly clear for the size 3 and 5 matrix for species that breed
+multiple times. It also shows how propagation of uncertainty can change 
+conclusions for populations slightly increasing or decreasing but is less likely to 
+fulling change clear conclusions for more rapidly declining populations. 
+
+Overall results are not impacted heavily by matrix size. 
+
+### Propagation: by uncertainty level
+
+Results shown for 3x3 matrix under equal ratio of fecundity to survival but 
+under all three uncertainty levels. 
+
+This basically just shows that very low uncertainty doesn't change anything
+but the higher it gets the more it changes conclusions.
+
+```{r uncertainty_level_one}
+
+propagation_uncertainty_levels_1 <- ggplot() +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            matrix_size == "size 3",
+                            breeding_stages == "one"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed once") +
+  facet_grid(rows = vars(matrix_number),
+             cols = vars(uncertainty_level)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,2)
+
+propagation_uncertainty_levels_1
+
+```
+
+```{r uncertainty_level_two}
+
+propagation_uncertainty_levels_2 <- ggplot() +
+  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
+  geom_violin(data = filter(full_data,
+                            matrix_size == "size 3",
+                            breeding_stages == "multiple"), 
+              aes(x = prop_scenario, 
+                  y = lambda, fill = prop_scenario,
+                  colour = prop_scenario),
+              scale = "width") +
+  scale_fill_manual(values = colours_scenario[1:4]) +
+  scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
+  labs(x = "",
+       y = "Population growth rate",
+       title = "breed multiple") +
+  facet_grid(rows = vars(matrix_number),
+             cols = vars(uncertainty_level)) +
+  plain_theme() +
+  theme(legend.position = "none") +
+  ylim(0,2)
+
+propagation_uncertainty_levels_2
+
+```
+## Discussion
+
+* As a subfield of ecology, those using MPMs are doing pretty ok in terms of
+uncertainty reporting and quantification. Certainly better than ecology as a 
+whole and indeed a lot of other scientific disciplines (Simmonds et al. 2022).
+But, we are still not at 100% and still not as good as some fields such as
+political science and health sciences (Simmonds et al. 2022). There is still 
+room to improve as around 1/5 of papers report no uncertainty at all. 
+
+* Biggest area to improve is in reporting uncertainty fo all vital rates. Not 
+always easy as sometimes they are pulled from literature or expert opinion but
+there are ways to add some (give examples from review) and how boundaries are
+chosen will be important. 
+
+* Another area for improvement is consistency across papers. Large number of ways
+in which uncertainty is reported, mirroring other reporting for MPMs (Sam Gascoigne).
+This makes it challenging, if not impossible, to compare uncertainty across all 
+studies therefore limiting potential to use it in comparative analyses. It also
+brings challenges to incorporating such uncertainty into open source databases, 
+as if it is not reported in a standardised way, it cannot always be stored in 
+a standardised and interpretable way. 
+
+* I have shown here that propagation of vital rate uncertainty into derived 
+estimates is important. The level of importance varies by base matrix, life history,
+and uncertainty level. Conclusions were changed due to uncertainty for 42.5% of
+published papers (this of course could be a biased sample as we do not know
+how uncertainty would have changed conclusions in papers that did not report it)
+and in 70% of my simulated scenarios (under mid level uncertainty). This will be 
+particularly important where results can inform actions such as for conservation
+or eradication.
+To get a full
+picture of the results of a study, it is necessary to propagate both fecundity
+and survival uncertainties. However, the amount of bias you get from partial 
+propagation is highly dependent on life history. Estimation of the dominant
+vital rate through elasticity analysis seems reasonably robust even with full
+uncertainty propagation under low - medium uncertainty (see Table X), therefore, 
+it should be possible to identify dominant processes and cases where partial
+propagation might be less problematic. This is reassuring for work that aims to
+use such analyses to inform population management (CITE examples). 
+But should also be treated with some caution as under high uncertainty, dominant
+processes are likely to uncertain as well. 
+
+* Matrix size has relatively smaller influence compared to life history attributes
+so modeller's decisions on the number of stages is maybe less important for 
+propagation of vital rate uncertainty than intrinsic biology of the species. 
+Although it should be noted that all vital rates of the same type here had the same
+relative amount of uncertainty, for example all fecundity elements had the same
+proportional uncertainty. This is not necessarily realistic and may have reduced
+the impact of matrix size, which could in real studies have a strong impact on
+the same size of each vital rate and subsequently its uncertainty. 
+
+* The distribution of lambda was not always normal or any other clear distribution. 
+This could make reported uncertainty in lambda harder to propagate to further
+studies, such as comparative analyses. This again presents a challenge for open
+source databased and uncertainty storage. Ideally, where resampling, bootstrapping,
+or MCMC have been performed, the full output of such analyses will all resamplings
+should be included or archived with the paper to allow easier propagation of
+uncertainty and avoiding repeating time intensive analysis steps. 
+
+* All of this suggests that uncertainty is widely reported in the MPM community
+and is important for the conclusions we draw. Given this, it has implications
+for lambdas and other characteristics in comparative analyses. 
+
+## Limitations
+
+* Same relative uncertainty is used across all vital rates of the same type,
+this is unlikely to be realistic. The actual levels of bias from partial 
+propagation will vary based on this. 
+
+* Not all derived quantities where explored and not pushed through to comparative 
+analyses.
+
+* Not all matrix sizes explored.
+
+* No question of if uncertainty or propagation method was correct or the most
+appropriate. This would be a whole different but useful analysis. 
+
+* All of this is 'what if' but based in real matrices and real reported uncertainty
+levels so should be representative. 
+
+* Do not account for any covariance or dependence in uncertainty between vital 
+rates e.g. if estimated from same model like Surv ~ Age. 

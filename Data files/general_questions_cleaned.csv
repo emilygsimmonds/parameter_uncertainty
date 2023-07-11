@@ -121,7 +121,7 @@
 3,"Do they model an observation process for survival?","can't tell","used estimates from another paper","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford","Use popbio"
 4,"Do they model an observation process for fecundity?","can't tell","used estimates from another paper","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
 5,"Was uncertainty reported?","yes","standard deviation of estimate so individual variability? looked at stochastic projections from a range of parameter values","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
-6,"If reported, was the uncertainty complete for all parameters?","maybe","depends if standard deviation really is enough","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
+6,"If reported, was the uncertainty complete for all parameters?","yes","standard deviation represents variability in the estimates not variability of data","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
 7,"Was lambda estimated from matrix? If yes what conclusion","no",NA,"http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
 8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","yes","temperature was most important for determining a good or bad year","http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
 9,"Pre or post breeding census","pre",NA,"http://dx.doi.org/10.1016/j.envsoft.2016.02.009",2016,"Stratford",NA
@@ -134,7 +134,7 @@
 3,"Do they model an observation process for survival?","no","Wood's quadratic programming method","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
 4,"Do they model an observation process for fecundity?","no","Wood's quadratic programming method","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
 5,"Was uncertainty reported?","no","but did do a state-space model for white-face disease","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
-6,"If reported, was the uncertainty complete for all parameters?","no","survival reproduction","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
+6,"If reported, was the uncertainty complete for all parameters?",NA,"survival reproduction","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
 7,"Was lambda estimated from matrix? If yes what conclusion","yes","stability, just","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
 8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","yes","adult female survival has highest impact","10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
 9,"Pre or post breeding census","post",NA,"10.1007/978-1-4939-0697-0_15",2014,"Lizcano",NA
@@ -939,8 +939,8 @@
 2,"Organism","mammal","cougars","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
 3,"Do they model an observation process for survival?","can't tell","Modified Mayfield method","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
 4,"Do they model an observation process for fecundity?","no","direct calculation of mean kittens divided by number of adult females times female survival divided by 2","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
-5,"Was uncertainty reported?","maybe","standard deviation for survival (not sure that is uncertainty), have ± on litter size but doesn't say what it is","10.1016/j.biocon.2013.07.008",2013,"Wielgus","± not labelled!"
-6,"If reported, was the uncertainty complete for all parameters?","no","reproduction","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
+5,"Was uncertainty reported?","no","standard deviation for survival (not sure that is uncertainty), have ± on litter size but doesn't say what it is. Standard deviations seem to cover environmental and demographic stochasticity not uncertainty","10.1016/j.biocon.2013.07.008",2013,"Wielgus","± not labelled!"
+6,"If reported, was the uncertainty complete for all parameters?",NA,NA,"10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
 7,"Was lambda estimated from matrix? If yes what conclusion","yes","0.8 in HH and 1.05 in LH, results supported by stochastic growth rates too (with hunting). When hunting excluded deterministic growth was 0.99 in HH and 1.14 in LH. ","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
 8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","yes","survival of kittens had highest elasticity in both populations","10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
 9,"Pre or post breeding census","not reported",NA,"10.1016/j.biocon.2013.07.008",2013,"Wielgus",NA
@@ -1056,7 +1056,7 @@
 2,"Organism","mammal","primates","10.1086/657443",2011,"Morris",NA
 3,"Do they model an observation process for survival?","no","binomial GLMM","10.1086/657443",2011,"Morris","did account for it but not reported!"
 4,"Do they model an observation process for fecundity?","no","binomial GLMM","10.1086/657443",2011,"Morris",NA
-5,"Was uncertainty reported?","accounted not reported","variance of the process - something we are interested in - uncertainty due to sampling is accounted for and removed but not reported","10.1086/657443",2011,"Morris",NA
+5,"Was uncertainty reported?","no","variance of the process - something we are interested in - uncertainty due to sampling is accounted for and removed but not reported","10.1086/657443",2011,"Morris",NA
 6,"If reported, was the uncertainty complete for all parameters?",NA,NA,"10.1086/657443",2011,"Morris",NA
 7,"Was lambda estimated from matrix? If yes what conclusion","no","stochastic only","10.1086/657443",2011,"Morris",NA
 8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","yes","most sensitive to adult survival","10.1086/657443",2011,"Morris",NA
@@ -1108,8 +1108,8 @@
 2,"Organism","anura","Assa darlingtoni","10.1111/cobi.12234",2013,"Keith",NA
 3,"Do they model an observation process for survival?","no","from literature","10.1111/cobi.12234",2013,"Keith",NA
 4,"Do they model an observation process for fecundity?","no","from literature","10.1111/cobi.12234",2013,"Keith",NA
-5,"Was uncertainty reported?","yes","mention some as part of the bigger model but only see it for listing criteria not any lower levels","10.1111/cobi.12234",2013,"Keith",NA
-6,"If reported, was the uncertainty complete for all parameters?","no","survival reproduction","10.1111/cobi.12234",2013,"Keith",NA
+5,"Was uncertainty reported?","no","mention some as part of the bigger model but never find it reported","10.1111/cobi.12234",2013,"Keith",NA
+6,"If reported, was the uncertainty complete for all parameters?",NA,"survival reproduction","10.1111/cobi.12234",2013,"Keith",NA
 7,"Was lambda estimated from matrix? If yes what conclusion","no",NA,"10.1111/cobi.12234",2013,"Keith",NA
 8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","no",NA,"10.1111/cobi.12234",2013,"Keith",NA
 9,"Pre or post breeding census","not reported","guess: post","10.1111/cobi.12234",2013,"Keith",NA
@@ -1494,19 +1494,6 @@
 11,"What is error if one found?",NA,NA,"10.1007/s10764-010-9461-z",2010,"Blomquist",NA
 12,"What metric used for fecundity?","survival to first census",NA,"10.1007/s10764-010-9461-z",2010,"Blomquist",NA
 13,"Sample size","3964","max number in each age group summed","10.1007/s10764-010-9461-z",2010,"Blomquist",NA
-1,"Is there an MPM in original paper?","yes","experiment","10.1007/s10646-010-0507-y",2010,"Duchet","PopTools"
-2,"Organism","cladocera","daphnia pulex daphnia magna","10.1007/s10646-010-0507-y",2010,"Duchet","RAMAS-GIS"
-3,"Do they model an observation process for survival?","no","horizontal or vertical life table","10.1007/s10646-010-0507-y",2010,"Duchet","density dependent"
-4,"Do they model an observation process for fecundity?","no","horizontal or vertical life table","10.1007/s10646-010-0507-y",2010,"Duchet",NA
-5,"Was uncertainty reported?","yes","some plotted but not labelled","10.1007/s10646-010-0507-y",2010,"Duchet",NA
-6,"If reported, was the uncertainty complete for all parameters?","yes",NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
-7,"Was lambda estimated from matrix? If yes what conclusion","yes","spinosad decreased lambda but over 1 for D.pulex","10.1007/s10646-010-0507-y",2010,"Duchet",NA
-8,"Was a sensitivity/elasticity analysis conducted? If yes what was conclusion","no",NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
-9,"Pre or post breeding census","post",NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
-10,"Life cycle correctly estimated?","not clear","no life cycle diagram","10.1007/s10646-010-0507-y",2010,"Duchet",NA
-11,"What is error if one found?",NA,NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
-12,"What metric used for fecundity?","average number of female offspring produced by female",NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
-13,"Sample size","not reported",NA,"10.1007/s10646-010-0507-y",2010,"Duchet",NA
 1,"Is there an MPM in original paper?","yes",NA,"10.2193/2008-093",2010,"Grear",NA
 2,"Organism","bird","common loon","10.2193/2008-093",2010,"Grear",NA
 3,"Do they model an observation process for survival?","can't tell","previous mark recapture analysis","10.2193/2008-093",2010,"Grear",NA

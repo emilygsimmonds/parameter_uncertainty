@@ -141,6 +141,20 @@ to_save <- matrices_22[breed_once_matrices_22]
 save(to_save, 
      file = "./Data files/twobytwo_breed_once.RData")
 
+#### create table of final matrices and their ratio
+
+data.frame(matrix_number = 1:5, 
+           juvenile_survival = unlist(matrices_22[breed_all_matrices_22], 
+                                      recursive = FALSE)[seq(2,5*4,4)],
+           adult_survival = unlist(matrices_22[breed_all_matrices_22], 
+                                   recursive = FALSE)[seq(4,5*4,4)],
+           juvenile_reproduction = unlist(matrices_22[breed_all_matrices_22], 
+                                            recursive = FALSE)[seq(1,5*4,4)],
+           adult_reproduction = unlist(matrices_22[breed_all_matrices_22], 
+                    recursive = FALSE)[seq(3,5*4,4)],
+           fecunditysurvival_ratio = 
+             breed_all_22[round(length(breed_all_22[,1])*markers),1])
+
 #### 3x3 matrices ####
 
 # which matrices have size = 3?
