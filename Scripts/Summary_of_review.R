@@ -303,3 +303,50 @@ general_questions %>%
   dplyr::mutate(Perc = count/sum(count)) %>%
   ungroup()   %>%
   mutate(position = (Perc/2))
+
+#### Elasticity summary ####
+
+# % time the elasticity element changed
+
+reference_2x2 <- two_by_two_results %>% 
+  filter(prop_scenario == "none") %>%
+  group_by(matrix_number, breeding_stages) %>%
+  summarise(reference = mean(elasticity))
+
+elasticity_results_2x2 <- left_join(two_by_two_results,reference_2x2) %>% 
+  filter(prop_scenario != "none") %>%
+  mutate(check = elasticity == reference) %>%
+  group_by(breeding_stages, prop_scenario, matrix_number, uncertainty_level) %>%
+  summarise(percentage = 1-(sum(check)/10000))
+
+write.csv(elasticity_results_2x2, "./Data files/elasticity_results_2x2.csv", 
+          row.names = FALSE)
+
+reference_3x3 <- three_by_three_results %>% 
+  filter(prop_scenario == "none") %>%
+  group_by(matrix_number, breeding_stages) %>%
+  summarise(reference = mean(elasticity))
+
+elasticity_results_3x3 <- left_join(three_by_three_results,reference_3x3) %>% 
+  filter(prop_scenario != "none") %>%
+  mutate(check = elasticity == reference) %>%
+  group_by(breeding_stages, prop_scenario, matrix_number, uncertainty_level) %>%
+  summarise(percentage = 1-(sum(check)/10000))
+
+write.csv(elasticity_results_3x3, "./Data files/elasticity_results_3x3.csv", 
+          row.names = FALSE)
+
+reference_5x5 <- five_by_five_results %>% 
+  filter(prop_scenario == "none") %>%
+  group_by(matrix_number, breeding_stages) %>%
+  summarise(reference = mean(elasticity))
+
+elasticity_results_5x5 <- left_join(five_by_five_results,reference_5x5) %>% 
+  filter(prop_scenario != "none") %>%
+  mutate(check = elasticity == reference) %>%
+  group_by(breeding_stages, prop_scenario, matrix_number, uncertainty_level) %>%
+  summarise(percentage = 1-(sum(check)/10000))
+
+write.csv(elasticity_results_5x5, "./Data files/elasticity_results_5x5.csv", 
+          row.names = FALSE)
+
