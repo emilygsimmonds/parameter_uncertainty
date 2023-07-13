@@ -1,4 +1,6 @@
-# SCRIPT TO PULL MATRICES FROM COMADRE #
+# T1.2: Script to pull matrices and DOI from COMADRE #
+
+################################################################################
 
 #### Set up ####
 
@@ -12,11 +14,12 @@ library(Rcompadre)
 library(dplyr)
 library(popdemo)
 library(popbio)
-library(maps)     # for plotting world map
 
 #fetch the comadre database
 
-comadre <- cdb_fetch("COMADRE_v.4.21.8.0.RData")
+comadre <- cdb_fetch("./Data files/COMADRE_v.4.21.8.0.RData")
+
+################################################################################
 
 #### Subset to useful matrices ####
 
@@ -74,6 +77,7 @@ DOI_summary_2010 <- comadre_2010 %>%
 
 write.csv(DOI_summary_2010, "./Data files/DOIs_2010.csv")
 
+################################################################################
   
 #### CHOOSE PARAMETER SIMULATION MATRICES ####
 
@@ -279,14 +283,5 @@ to_save <- matrices_55[breed_once_matrices_55] # use matrix 13 not 69 as 69 seem
 
 save(to_save, 
      file = "./Data files/fivebyfive_breed_once.RData")
-
-#### SAVE OUT META DATA FOR CHOSEN MATRICES ####
-
-## data uncertainty matrices
-
-# object = comadre_2, numbers = max no 0: 121, min no 0: 153, max 0: 88
-
-c(comadre_2[121]$SpeciesAccepted, comadre_2[121]$DOI_ISBN, 
-  comadre_2[121]$CensusType, comadre_2[121]$mat)
 
 

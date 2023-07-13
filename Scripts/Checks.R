@@ -1,9 +1,17 @@
-#### Checks ####
+# T1.2: Script to check functions are performing as expected on dummy data #
 
-#### Source scripts ####
+################################################################################
+
+# source scripts
 
 source("./Functions/parametric_bootstrap_function.R")
 source("./Functions/run_multiple_resampling.R")
+
+# load packages
+
+library(popdemo)
+
+################################################################################
 
 #### Set up example matrices of each size ####
 

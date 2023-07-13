@@ -1,4 +1,6 @@
-# theme for the ggplots - controls colours and fonts of titles and axes labels
+# Script of ggplot themes for plotting #
+
+################################################################################
 
 plain_theme <- function() {
   theme(

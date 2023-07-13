@@ -1,4 +1,6 @@
-# SCRIPT TO DOWNLOAD PAPERS FROM DOI #
+# T1.2: Script to open url for papers from DOI #
+
+################################################################################
 
 #### Set up ####
 

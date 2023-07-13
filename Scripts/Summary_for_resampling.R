@@ -1,26 +1,22 @@
-# T1.2: SCRIPT TO SUMMARISE REVIEW FOR SIMULATIONS #
+# T1.2: Script to summarise review ready to resampling #
 
 ################################################################################
 
 #### Set up ####
 
-## load packages ####
+# load packages 
 
 library(tidyverse)
 
-## load data ####
+# load data
 
 # vital rates
 vital_rates <- read.csv("./Data files/vital_rates.csv", header = TRUE)
-vital_rates_no_uncert <- read.csv("./Data files/vital_rates_no_uncert.csv", header = TRUE)
 
 # comadre working data
-
 load("./Data files/working_comadre.RData")
 
-#### restricting to 3x3 reduces sample size a lot ####
-
-#### try summarising by matrix position instead ####
+################################################################################
 
 # summarise uncertainty by paper, model, type, and matrix position
 
@@ -28,7 +24,8 @@ load("./Data files/working_comadre.RData")
 
 vital_rates_editted <- vital_rates %>% 
   mutate(Fecundity = str_detect(Matrix.position, "1,")) %>%
-  mutate(Fecundity = case_when(str_detect(Vital.rate, "reproduction") ~ TRUE,
+  # assign each vital rate a class of 'survival' 'reproduction' or NA
+  mutate(Fecundity = case_when(str_detect(Vital.rate, "reproduction") ~ TRUE, 
                                str_detect(Vital.rate, "recruitment") ~ TRUE,
                                str_detect(Vital.rate, "fecundity") ~ TRUE,
                                str_detect(Vital.rate, "fertility") ~ TRUE,
@@ -37,13 +34,14 @@ vital_rates_editted <- vital_rates %>%
                                Fecundity == TRUE ~ TRUE,
                                TRUE ~ NA)) %>%
   drop_na(Fecundity) %>%
+  # filter to only standard error or confidence interval
   filter(Uncertainty.type == "standard error" | 
          Uncertainty.type == "confidence interval" |
          Uncertainty.type != "standard deviation",
          Uncertainty1 != "Can't find it" & Uncertainty1 != "not reported",
          Uncertainty1 > 0) 
 
-# next, want to change all confidence intervals into standard error (CHECK)
+# next, want to change all confidence intervals into standard error
 
 vital_rates_editted2 <- vital_rates_editted %>% 
   mutate(Uncertainty1 = as.numeric(Uncertainty1),
@@ -57,15 +55,18 @@ vital_rates_editted2 <- vital_rates_editted %>%
                            TRUE ~ 0)) %>%
   mutate(Uncertainty1 = case_when(Uncertainty.type == "confidence interval" ~ 
                                    check/2,
-                                  TRUE ~ Uncertainty1)) %>% # turn Uncertainty1 into a standard error for CI
-  filter(check2 < 0.06 & check2 > -0.06) %>% # margin of tolerance of 0.05 otherwise exclude
+                                  TRUE ~ Uncertainty1)) %>% 
+  # turn Uncertainty1 into a standard error for CI
+  filter(check2 < 0.06 & check2 > -0.06) %>% 
+  # margin of tolerance of 0.05 otherwise exclude
   mutate(proportion = Uncertainty1/Estimate) 
 
 # check whether any have uncertainty more than the value of estimate
 which(vital_rates_editted2$proportion > 1)
 
 # then calculate summaries of the proportional error
-Uncertainty_summary <- vital_rates_editted2 %>% # then calculate each as a proportion of the mean estimate
+Uncertainty_summary <- vital_rates_editted2 %>% 
+  # then calculate each as a proportion of the mean estimate
   group_by(Fecundity) %>% summarise(lower = quantile(proportion, probs=(0.025),na.rm =TRUE), 
                                     median = median(proportion, na.rm = TRUE),
                                     upper = quantile(proportion, probs=(0.975),na.rm =TRUE), 
@@ -79,31 +80,3 @@ write.csv(Uncertainty_summary,
           row.names = FALSE)
 
 ################################################################################
-
-#### sample size for direct calculation parameters ####
-
-reduced_vital_rates <- vital_rates %>% 
-  filter(str_detect(Method.of.estimation, "direct calculation"),
-         Sample.size != "can't tell" &
-           Sample.size != "not clear" &
-           Sample.size != "not reported") 
-
-length(unique(reduced_vital_rates$DOI)) # 16 papers that also reported uncertainty have sample size
-
-reduced_vital_rates2 <- vital_rates %>% 
-  filter(str_detect(Method.of.estimation, "direct calculation"),
-         Sample.size == "can't tell" |
-           Sample.size == "not clear" |
-           Sample.size == "not reported") 
-
-length(unique(reduced_vital_rates2$DOI)) # 20 with no sample size but do have sampling uncertainty
-
-reduced_vital_rates_no_uncert <- vital_rates_no_uncert %>% 
-  filter(str_detect(Method.of.estimation, "direct calculation"),
-         Sample.size != "can't tell" &
-           Sample.size != "not clear" &
-           Sample.size != "not reported") 
-
-length(unique(reduced_vital_rates_no_uncert$DOI)) # 2 papers with no uncertainty but with sample size
-
-16+20+2 # 38 papers in total - plenty to do analysis

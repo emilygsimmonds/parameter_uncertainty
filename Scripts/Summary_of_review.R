@@ -1,47 +1,43 @@
-# SCRIPT TO MAKE SUMMARY PLOTS AND NUMBERS #
+# T1.2: Script to summarise the results of the review #
+
+################################################################################
 
 #### Set up ####
 
-## load packages ####
+# load packages
 
 library(tidyverse)
 
-## Source required scripts ####
+# source required scripts 
 
 source('./Scripts/theme_script.R')
 
-## Load data ####
+# load data 
 
 general_questions <- read.csv('./Data files/general_questions_cleaned.csv',
                               header = TRUE)
 vital_rates <- read.csv('./Data files/vital_rates.csv', header = TRUE)
 
-# remove any experimental data
+################################################################################
 
-#marker <- general_questions$DOI[which(general_questions$Answer2 == "experiment")]
+#### Initial high level summaries ####
 
-#general_questions <- filter(general_questions, 
-#                            DOI != marker[1] &
-#                              DOI != marker[2] &
-#                              DOI != marker[3])
-
-#### Summaries ####
-
-length(unique(general_questions$DOI)) # 117 
+length(unique(general_questions$DOI)) # 117 number of DOIs
 
 number_papers <- general_questions %>%
   filter(Number == 1,
          Answer1 == "yes")  
 
-length(unique(number_papers$DOI))
+length(unique(number_papers$DOI)) # number of papers with uncertainty
 
 number_papers <- general_questions %>%
   filter(Number == 1,
-         Answer1 == "no") 
+         Answer1 == "no") # number of papers without uncertainty
 
 length(unique(number_papers$DOI))
 
-length(unique(vital_rates$DOI)) # now both match at 82
+length(unique(vital_rates$DOI)) # check number of papers in vital rates =
+# number with uncertainty: now both match at 82
 
 number_papers <- general_questions %>%
   filter(Number == 5,
@@ -49,9 +45,7 @@ number_papers <- general_questions %>%
 
 length(unique(number_papers$DOI))
 
-#unique(vital_rates$DOI)[!unique(vital_rates$DOI) %in% unique(number_papers$DOI)] 
-
-#unique(number_papers$DOI)[!unique(number_papers$DOI) %in% unique(vital_rates$DOI)]
+################################################################################
 
 ### HOW MANY REPORT ANY UNCERTAINTY? ####
 
@@ -68,7 +62,6 @@ general_questions %>%
   mutate(position = (Perc/2))
 
 # 21.9 no, 78.1 yes
-
 
 ### WAS UNCERTAINTY COMPLETE? ####
 
