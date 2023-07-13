@@ -11,7 +11,7 @@
 
 # output is joined dataframe of all resample results
 
-## source scripts
+# source scripts
 
 source("./Functions/parametric_bootstrap_function.R")
 

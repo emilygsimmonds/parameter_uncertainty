@@ -14,7 +14,8 @@ library(tidyverse)
 library(Rcompadre)
 library(popbio)
 
-# input is 3 x 3 matrix, fecundity uncertainty and survival uncertainty (as proportions but representing standard error)
+# input is 3 x 3 matrix, fecundity uncertainty and survival uncertainty 
+# (as proportions but representing standard error)
 
 # output is estimates of lambda and most important matrix elements (elasticity)
 
