@@ -1,0 +1,6 @@
+﻿Column_name,Description,Type,Units,Source,Author
+breeding_stages,"Indicator of reproduction type. Takes two values: multiple = species reproduces in multiple stages, once = species reproduces in a single stage. ",Character,NA,User created,
+prop_scenario,"Indicator of the propagation scenario. Can take three values: full = uncertainty in all elements propagated, f_only = uncertainty in only reproductive elements propagated, s_only = uncertainty in only survival elements propagated. ",Character,NA,User created,
+matrix_number,"Indicator of which matrix the results are from. Can take integer values from 1-5, 1 = survival dominated, 5 = reproduction dominated. ",Numeric,NA,User created,
+uncertainty_level,"Indicator of the level of uncertainty the results come from. Can take three values: low = 2.5th precentile of reported uncertainty, mid = median reported uncertainty, high = 97.5th percentile of reported uncertainty.",Character,NA,User created,
+percentage,Proportion of resamples that had a different dominant elasticity to the base matrix. ,Numeric,Proportion,Calculated from all resamples under each set of critria (see Script Summary_of_review for calculations),

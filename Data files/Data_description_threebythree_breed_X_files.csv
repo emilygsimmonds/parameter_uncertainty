@@ -1,0 +1,2 @@
+﻿Data type,Description,Number of list entries,List entry dimensions,List entry data type,Source,Author
+R list,"List of base matrices of size 3x3. Individual elements are vital rates for each population. Each file contains those for a particular reproductive strategy, either breeding in one stage or multiple. Matrices go from survival dominant (1) to fecundity dominant (2).",3,3x3,matrix,COMADRE,

@@ -1,0 +1,4 @@
+﻿Column_name,Description,Type,Units,Source,Author
+DOI_ISBN,Unique identifier (DOI) for each paper identified as meeting inclusion criteria for review.,Character,NA,COMADRE dataset,
+n_populations,Number of populations modelled in each paper.,Numeric,NA,COMADRE dataset,
+unlabelled,Comments or notes.,Character,NA,User created ,

@@ -1,0 +1,7 @@
+﻿Column_name,Description,Data_type,Units,Source,Author
+matrix_number,Indicator of matrix number. Integer values from 1-5. Indicates survival:fecundity ratio with 1 = survival dominant and 5 = fecundity dominant.,Integer,NA,User created,
+breeding_stages,"Indicator of reproductive strategy. Can take two values: one = reproduce in one stage only, multiple = reproduce in multiple stages.",Character,NA,User created,
+uncertainty_level,"Indicator of the level of uncertainty used to generate this resample. Can take four values: low = 2.5th precentile of reported uncertainty, mid = median reported uncertainty, high = 97.5th percentile of reported uncertainty, none = no uncertainty.",Character,NA,User created,
+lambda,Estimate of lambda (population growth rate) from the resampled matrix - calculated as the dominant eigenvalue of the matrix. Reported as a proportion.,Numeric,proportion,estimated from resamples,
+elasticity,"Estimate of the dominant vital rate, this is the highest elasticity value calculated. Number represents an index for matrix position. ",Integer,NA,estimated from resamples,
+prop_scenario,"Indicator of the propagation scenario that generated this resample. Can take four values: none = base matrix, f_only = propagated reproductive uncertainty only, s_only = propagated survival uncertainty only, full = propagated all uncertainties.",Character,NA,User created,

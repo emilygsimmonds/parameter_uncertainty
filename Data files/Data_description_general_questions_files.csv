@@ -1,0 +1,9 @@
+﻿Column_name,Description,Type,Units,Source,Author
+Number,"Indicator of the question number, takes values 1-13",,NA,reviewed publications,
+Question,Question to be answered in the following columns. For full question description see Data_description_general_questions_files2.csv,,NA,reviewed publications,
+Answer1,"Answer to question. Reported answers vary based on the question number, for full description see Data_description_general_questions_files2.csv",,NA,reviewed publications,
+Answer2,Extra details to support Answer1. Reported values vary based on question number. For further details see Data_description_general_questions_files2.csv,,NA,reviewed publications,
+DOI,"Unique identified of the paper, DOI.",,NA,reviewed publications,
+Year,Year the paper was published.,,NA,reviewed publications,
+Author,First author surname as documented on the published paper.,,NA,reviewed publications,
+Comments,Any other comments or details. ,,NA,reviewed publications,
