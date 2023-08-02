@@ -19,8 +19,12 @@ general_questions <- read.csv('./Data files/general_questions.csv',
 general_questions <- general_questions[rowSums(is.na(general_questions))
                                        != ncol(general_questions),] # remove all NA rows
 
+# also remove those that were not peer reviewed
+general_questions_cleaned <- filter(general_questions, 
+                            DOI != "not peer reviewed")
+
 # re-save 
 
-write.csv(general_questions, "./Data files/general_questions_cleaned.csv",
+write.csv(general_questions_cleaned, "./Data files/general_questions_cleaned.csv",
           row.names = FALSE)
 

@@ -157,14 +157,14 @@ full_data[c(seq(1005882, 1005882+299, 1),
 full_data <- full_data %>%
   dplyr::mutate(prop_scenario = as.factor(prop_scenario),
                 prop_scenario = plyr::revalue(prop_scenario, 
-                                              c("f_only"="fecundity \nonly", 
+                                              c("f_only"="reproduction \nonly", 
                                                 "s_only"="survival \nonly",
                                                 "full" = "full \npropagation",
                                                 "none" = "no \npropagation")),
                 prop_scenario = fct_relevel(prop_scenario, 
                                             "no \npropagation",
                                             "full \npropagation",
-                                            "fecundity \nonly",
+                                            "reproduction \nonly",
                                             "survival \nonly"),
                 uncertainty_level = as.factor(uncertainty_level),
                 uncertainty_level = fct_relevel(uncertainty_level,
@@ -195,12 +195,12 @@ elasticity_all <- bind_rows(elasticity_2x2,
 elasticity_all <- elasticity_all %>%
   dplyr::mutate(prop_scenario = as.factor(prop_scenario),
                 prop_scenario = plyr::revalue(prop_scenario, 
-                                              c("f_only"="fecundity \nonly", 
+                                              c("f_only"="reproduction \nonly", 
                                                 "s_only"="survival \nonly",
                                                 "full" = "full \npropagation")),
                 prop_scenario = fct_relevel(prop_scenario, 
                                             "full \npropagation",
-                                            "fecundity \nonly",
+                                            "reproduction \nonly",
                                             "survival \nonly"),
                 uncertainty_level = as.factor(uncertainty_level),
                 uncertainty_level = fct_relevel(uncertainty_level,
@@ -577,8 +577,8 @@ full_data <- full_data %>%
 #### PROPAGATION 2x2, Life history and propagation, mid uncertainty ####
 
 # create small dataframe to add letters to each panel
-text_numbers <- data.frame(breeding_stages = c(rep("reproduce in multiple stages", 5),
-                                               rep("reproduce in one stage", 5)),
+text_numbers <- data.frame(breeding_stages = c(rep("reproduce \nin multiple stages", 5),
+                                               rep("reproduce \nin one stage", 5)),
                            matrix_number = c(rep(1:5, 2)),
                            text = c("a", "b", "c", "d", "e",
                                     "f", "g", "h", "i", "j"))
@@ -606,7 +606,7 @@ Propagation_2x2_mid <- ggplot() +
              cols = vars(breeding_stages)) +
   plain_theme() +
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 0)) +
+        axis.text.x = element_text(angle = 90)) +
   ylim(0,2.5)
 
 Propagation_2x2_mid
@@ -617,8 +617,8 @@ ggsave("./Figures/SOM_Propagation_2x2_mid.png",
 #### PROPAGATION 5x5, Life history and propagation, mid uncertainty ####
 
 # create small dataframe to add letters to each panel
-text_numbers <- data.frame(breeding_stages = c(rep("reproduce in multiple stages", 5),
-                                               rep("reproduce in one stage", 5)),
+text_numbers <- data.frame(breeding_stages = c(rep("reproduce \nin multiple stages", 5),
+                                               rep("reproduce \nin one stage", 5)),
                            matrix_number = c(rep(1:5, 2)),
                            text = c("a", "b", "c", "d", "e",
                                     "f", "g", "h", "i", "j"))
@@ -658,8 +658,8 @@ ggsave("./Figures/SOM_Propagation_5x5_mid.png",
 #### CONCLUSION CHANGES 2x2 AND 5x5, mid uncertainty ####
 
 # create small dataframe to add letters to each panel
-text_numbers <- data.frame(breeding_stages = c(rep("reproduce in multiple stages", 5),
-                                               rep("reproduce in one stage", 5)),
+text_numbers <- data.frame(breeding_stages = c(rep("reproduce \nin multiple stages", 5),
+                                               rep("reproduce \nin one stage", 5)),
                            matrix_number = c(rep(1:5, 2)),
                            text = c("a", "b", "c", "d", "e",
                                     "f", "g", "h", "i", "j"))
@@ -1367,3 +1367,4 @@ Elasticity_2x2_high + Elasticity_3x3_high + Elasticity_5x5_high +
 ggsave("./Figures/SOM_Elasticity_high.png", last_plot(),
        width = 25, height = 20, 
        units = "cm")
+

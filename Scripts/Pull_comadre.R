@@ -14,10 +14,15 @@ library(Rcompadre)
 library(dplyr)
 library(popdemo)
 library(popbio)
+library(Rage)
 
-#fetch the comadre database
+# fetch the comadre database
 
 comadre <- cdb_fetch("./Data files/COMADRE_v.4.21.8.0.RData")
+
+# load functions
+
+source("./Functions/split_matrix_function.R")
 
 ################################################################################
 
@@ -76,6 +81,27 @@ DOI_summary_2010 <- comadre_2010 %>%
   arrange(desc(n_populations)) # 18 additional papers from 2010
 
 write.csv(DOI_summary_2010, "./Data files/DOIs_2010.csv")
+
+#### File of paper information for reviewed papers ####
+
+# combine two DOI data frames
+DOIs_all <- bind_rows(DOI_summary, DOI_summary_2010)[,1] 
+# remove n_populations column
+
+comadre_df <- comadre_combined@data[,-1] %>% 
+  filter(DOI_ISBN %in% DOIs_all$DOI_ISBN)
+  
+comadre_df <- comadre_df[,c(17,18,21,22)] %>%
+  distinct() %>%
+  arrange(DOI_ISBN)
+
+# remove rows 12 and 30 as wrong info and duplicate DOI
+
+comadre_df <- comadre_df[-c(12,30),]
+
+# save out
+
+write.csv(comadre_df,"./Figures/review_papers.csv")
 
 ################################################################################
   
@@ -147,17 +173,16 @@ save(to_save,
 
 #### create table of final matrices and their ratio
 
-data.frame(matrix_number = 1:5, 
-           juvenile_survival = unlist(matrices_22[breed_all_matrices_22], 
-                                      recursive = FALSE)[seq(2,5*4,4)],
-           adult_survival = unlist(matrices_22[breed_all_matrices_22], 
-                                   recursive = FALSE)[seq(4,5*4,4)],
-           juvenile_reproduction = unlist(matrices_22[breed_all_matrices_22], 
-                                            recursive = FALSE)[seq(1,5*4,4)],
-           adult_reproduction = unlist(matrices_22[breed_all_matrices_22], 
-                    recursive = FALSE)[seq(3,5*4,4)],
-           fecunditysurvival_ratio = 
-             breed_all_22[round(length(breed_all_22[,1])*markers),1])
+matrix_summary_2x2 <- bind_rows(data.frame(matrix_number = 1:5, 
+           reproductionsurvival_ratio = 
+             breed_all_22[round(length(breed_all_22[,1])*markers),1],
+           reproduction_strategy = "multiple",
+           matrix_size = "2x2"),
+           data.frame(matrix_number = 1:5, 
+                      reproductionsurvival_ratio = 
+                        breed_once_22[round(length(breed_once_22[,1])*markers),1],
+                      reproduction_strategy = "once",
+                      matrix_size = "2x2") )
 
 #### 3x3 matrices ####
 
@@ -220,6 +245,19 @@ to_save <- matrices_33[breed_once_matrices_33]
   
 save(to_save, 
      file = "./Data files/threebythree_breed_once.RData")
+
+#### create table of final matrices and their ratio
+
+matrix_summary_3x3 <- bind_rows(data.frame(matrix_number = 1:5, 
+                                 reproductionsurvival_ratio = 
+                                   breed_all_33[round(length(breed_all_33[,1])*markers),1],
+                                 reproduction_strategy = "multiple",
+                                 matrix_size = "3x3"),
+                      data.frame(matrix_number = 1:5, 
+                                 reproductionsurvival_ratio = 
+                                   breed_once_33[round(length(breed_once_33[,1])*markers),1],
+                                 reproduction_strategy = "once",
+                                 matrix_size = "3x3") )
 
 
 #### 5x5 ####
@@ -284,4 +322,73 @@ to_save <- matrices_55[breed_once_matrices_55] # use matrix 13 not 69 as 69 seem
 save(to_save, 
      file = "./Data files/fivebyfive_breed_once.RData")
 
+#### create table of final matrices and their ratio
 
+matrix_summary_5x5 <- bind_rows(data.frame(matrix_number = 1:5, 
+                                reproductionsurvival_ratio = 
+                                  breed_all_55[round(length(breed_all_55[,1])*markers),1],
+                                reproduction_strategy = "multiple",
+                                matrix_size = "5x5"),
+                     data.frame(matrix_number = 1:5, 
+                                reproductionsurvival_ratio = 
+                                  breed_once_55[c(1,
+                                                round(length(breed_once_55[,1])*markers[2:5]))
+                                                ,1],
+                                reproduction_strategy = "once",
+                                matrix_size = "5x5"))
+
+#### combine all summary tables and save out
+
+matrix_summary_all <- bind_rows(matrix_summary_2x2,
+                                matrix_summary_3x3,
+                                matrix_summary_5x5)
+
+write.csv(matrix_summary_all, "./Figures/matrix_ratios.csv")
+
+################################################################################
+
+#### Calculate generation times ####
+
+# load matrices
+
+load("./Data files/twobytwo_breed_all.RData")
+two_by_two <- to_save
+load("./Data files/twobytwo_breed_once.RData")
+two_by_two_all <- c(two_by_two, to_save)
+
+
+load("./Data files/threebythree_breed_all.RData")
+three_by_three <- to_save
+load("./Data files/threebythree_breed_once.RData")
+three_by_three_all <- c(three_by_three, to_save)
+
+
+load("./Data files/fivebyfive_breed_all.RData")
+five_by_five <- to_save
+load("./Data files/fivebyfive_breed_once.RData")
+five_by_five_all <- c(five_by_five, to_save)
+
+two_by_two_split <- map(.x = two_by_two_all,
+                          .f = split_matrix)
+
+three_by_three_split <- map(.x = three_by_three_all,
+                          .f = split_matrix)
+
+five_by_five_split <- map(.x = five_by_five_all,
+                          .f = split_matrix)
+
+# calculate generation time
+
+unlist(map(.x = two_by_two_split,
+    ~{gen_time(matR = .x[["mat_F"]],
+               matU = .x[["mat_U"]], "age_diff")}))
+
+map(.x = three_by_three_split,
+    ~{gen_time(matR = .x[["mat_F"]],
+               matU = .x[["mat_U"]], "age_diff")})
+
+map(.x = five_by_five_split,
+    ~{gen_time(matR = .x[["mat_F"]],
+               matU = .x[["mat_U"]], "age_diff")})
+
+# then combine with matrix ratios and re-export

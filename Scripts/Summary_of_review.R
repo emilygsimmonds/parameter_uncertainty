@@ -22,7 +22,7 @@ vital_rates <- read.csv('./Data files/vital_rates.csv', header = TRUE)
 
 #### Initial high level summaries ####
 
-length(unique(general_questions$DOI)) # 117 number of DOIs
+length(unique(general_questions$DOI)) # 116 number of DOIs
 
 number_papers <- general_questions %>%
   filter(Number == 1,
