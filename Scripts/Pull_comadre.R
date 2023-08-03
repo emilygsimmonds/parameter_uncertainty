@@ -379,16 +379,30 @@ five_by_five_split <- map(.x = five_by_five_all,
 
 # calculate generation time
 
-unlist(map(.x = two_by_two_split,
+two_by_two_gen_time <- unlist(map(.x = two_by_two_split,
     ~{gen_time(matR = .x[["mat_F"]],
                matU = .x[["mat_U"]], "age_diff")}))
 
-map(.x = three_by_three_split,
+three_by_three_gen_time <- unlist(map(.x = three_by_three_split,
     ~{gen_time(matR = .x[["mat_F"]],
-               matU = .x[["mat_U"]], "age_diff")})
+               matU = .x[["mat_U"]], "age_diff")}))
 
-map(.x = five_by_five_split,
+five_by_five_gen_time <- unlist(map(.x = five_by_five_split,
     ~{gen_time(matR = .x[["mat_F"]],
-               matU = .x[["mat_U"]], "age_diff")})
+               matU = .x[["mat_U"]], "age_diff")}))
 
 # then combine with matrix ratios and re-export
+
+matrix_ratios <- read.csv("./Figures/matrix_ratios.csv")[,-1]
+matrix_ratios_new <- matrix_ratios %>% 
+  mutate(generation_time = round(c(two_by_two_gen_time,
+                             three_by_three_gen_time,
+                             five_by_five_gen_time),2))
+
+# generation time for matrix 3, 5x5, breeding once is 1.324300e-15 but goes
+# to 0 if rounded add back in manually
+matrix_ratios_new$generation_time[28] <- five_by_five_gen_time[8]
+
+write.csv(matrix_ratios_new, "./Figures/matrix_ratios.csv",
+          row.names = FALSE)
+
