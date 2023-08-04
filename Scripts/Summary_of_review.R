@@ -25,13 +25,13 @@ vital_rates <- read.csv('./Data files/vital_rates.csv', header = TRUE)
 length(unique(general_questions$DOI)) # 116 number of DOIs
 
 number_papers <- general_questions %>%
-  filter(Number == 1,
+  filter(Number == 5,
          Answer1 == "yes")  
 
 length(unique(number_papers$DOI)) # number of papers with uncertainty
 
 number_papers <- general_questions %>%
-  filter(Number == 1,
+  filter(Number == 5,
          Answer1 == "no") # number of papers without uncertainty
 
 length(unique(number_papers$DOI))
@@ -77,7 +77,7 @@ general_questions %>%
   ungroup()   %>%
   mutate(position = (Perc/2))
 
-# 47.6 no, 52.4 yes
+# 50 no, 50 yes
 
 ### WHICH WERE MISSED? ####
 
@@ -91,8 +91,8 @@ general_questions %>%
   group_by(Missing_F, Missing_S) %>%
   dplyr::summarize(count = n())
 
-# most missing both (20/39)
-# then missing S and F almost equal 9 vs 9 
+# most missing both (23/39)
+# then missing S and F almost equal 8 vs 9 
 
 general_questions %>%
   filter(Number == 3,
@@ -134,7 +134,7 @@ vital_rates %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 21.2 no, 78.8 yes
+# 21 no, 79 yes
 
 # by paper - yes and no only
 Propagated_uncertainty_paper <- vital_rates %>%
@@ -214,7 +214,7 @@ combined_data %>%
   ungroup() %>%
   mutate(position = (Perc/2))
 
-# 79.1% all, 7% none, 2.3% some, 11.6 % can't tell
+# 82.5% all, 7.5% none, 2.5% some, 7.5 % can't tell
 
 # or with incomplete uncertainty
 
@@ -268,7 +268,8 @@ lambda_checks$DOI[which(lambda_checks$cross1 == TRUE)]
 
 reduced_general_questions <- filter(general_questions, Number == 6)
 
-reduced_general_questions[reduced_general_questions$DOI %in% lambda_checks$DOI[which(lambda_checks$cross1 == TRUE)],]
+reduced_general_questions[reduced_general_questions$DOI %in% 
+                            lambda_checks$DOI[which(lambda_checks$cross1 == TRUE)],]
 
 # vast majority have complete uncertainty
 
@@ -298,6 +299,12 @@ general_questions %>%
   mutate(position = (Perc/2))
 
 #### Elasticity summary ####
+
+## load results ##
+
+load("./Data files/two_by_two_results.RData")
+load("./Data files/three_by_three_results.RData")
+load("./Data files/five_by_five_results.RData")
 
 # % time the elasticity element changed
 

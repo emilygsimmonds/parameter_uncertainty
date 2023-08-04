@@ -284,7 +284,7 @@
 3,Do they model an observation process for survival?,no,assumptions for 1 to 2 year olds and from literature for 3+,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
 4,Do they model an observation process for fecundity?,no,assumptions for 1 to 2 year olds and from literature for 3+,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
 5,Was uncertainty reported?,yes,just for population size - stochastic simulations with demographic and environmental stochasticity,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
-6,"If reported, was the uncertainty complete for all parameters?",yes,standard deviation,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
+6,"If reported, was the uncertainty complete for all parameters?",no,survival reproduction,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
 7,Was lambda estimated from matrix? If yes what conclusion,no,,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,yes,survival of 1 year olds was most important for probability of extinction,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
 9,Pre or post breeding census,not reported,think pre,10.1111/j.1600-0587.2010.06263.x,2011,Minin,
@@ -312,7 +312,7 @@
 3,Do they model an observation process for survival?,no,direct calculation,10.1017/S0376892917000340,2018,Pickett,
 4,Do they model an observation process for fecundity?,no,assume 3 eggs per clutch/2,10.1017/S0376892917000340,2018,Pickett,
 5,Was uncertainty reported?,yes,bootstrapped lambda using standard deviation of vital rates not always clear where these came from,10.1017/S0376892917000340,2018,Pickett,
-6,"If reported, was the uncertainty complete for all parameters?",yes,standard deviation,10.1017/S0376892917000340,2018,Pickett,standard deviations
+6,"If reported, was the uncertainty complete for all parameters?",yes,survival reproduction,10.1017/S0376892917000340,2018,Pickett,standard deviations
 7,Was lambda estimated from matrix? If yes what conclusion,no,,10.1017/S0376892917000340,2018,Pickett,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,no,,10.1017/S0376892917000340,2018,Pickett,
 9,Pre or post breeding census,not reported,think post,10.1017/S0376892917000340,2018,Pickett,
@@ -1095,8 +1095,8 @@
 2,Organism,bird,Anas laysanensis,10.1002/jwmg.582,2013,Reynolds,
 3,Do they model an observation process for survival?,yes,Barker model in Program MARK juvenile but adult from literature,10.1002/jwmg.582,2013,Reynolds,program MARK
 4,Do they model an observation process for fecundity?,no,direct calculation,10.1002/jwmg.582,2013,Reynolds,
-5,Was uncertainty reported?,yes,standard deviations and standard errors,10.1002/jwmg.582,2013,Reynolds,
-6,"If reported, was the uncertainty complete for all parameters?",no,some survival,10.1002/jwmg.582,2013,Reynolds,
+5,Was uncertainty reported?,yes,for juvenile survival,10.1002/jwmg.582,2013,Reynolds,
+6,"If reported, was the uncertainty complete for all parameters?",no,some survival reproduction,10.1002/jwmg.582,2013,Reynolds,
 7,Was lambda estimated from matrix? If yes what conclusion,yes,1.18 for source and 3.28 for reintroduced populations,10.1002/jwmg.582,2013,Reynolds,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,no,,10.1002/jwmg.582,2013,Reynolds,
 9,Pre or post breeding census,not reported,can’t tell,10.1002/jwmg.582,2013,Reynolds,
@@ -1501,8 +1501,8 @@
 2,Organism,mammal,huemul deer,10.1644/09-MAMM-A-047.1.,2010,Corti,FLAG
 3,Do they model an observation process for survival?,no,apparent survival estimated with Kaplan-Meier procedure,10.1644/09-MAMM-A-047.1.,2010,Corti,
 4,Do they model an observation process for fecundity?,no,direct calculation,10.1644/09-MAMM-A-047.1.,2010,Corti,
-5,Was uncertainty reported?,yes,only standard deviations for vital rates,10.1644/09-MAMM-A-047.1.,2010,Corti,
-6,"If reported, was the uncertainty complete for all parameters?",yes,,10.1644/09-MAMM-A-047.1.,2010,Corti,
+5,Was uncertainty reported?,yes,confidence interval for lambda,10.1644/09-MAMM-A-047.1.,2010,Corti,
+6,"If reported, was the uncertainty complete for all parameters?",no,survival reproduction,10.1644/09-MAMM-A-047.1.,2010,Corti,
 7,Was lambda estimated from matrix? If yes what conclusion,yes,stable,10.1644/09-MAMM-A-047.1.,2010,Corti,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,yes,adutl female survival was most important,10.1644/09-MAMM-A-047.1.,2010,Corti,
 9,Pre or post breeding census,pre,,10.1644/09-MAMM-A-047.1.,2010,Corti,

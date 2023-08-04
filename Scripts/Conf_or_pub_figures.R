@@ -146,10 +146,10 @@ full_data <- bind_rows(two_by_two_results,
                          rep("size 5", length(five_by_five_results[,1])+300)))
 
 # then add labels for low, mid, high uncertainty to those added rows
-full_data[c(seq(1005882, 1005882+299, 1), 
-            seq(1005882+299+1005426, 1005882+299+1005426+299, 1),
-            seq(1005882+299+1005426+299+1028936, 
-                1005882+299+1005426+299+1028936+299, 1)),
+full_data[c(seq(1005960, 1005960+299, 1), 
+            seq(1005960+299+1005358, 1005960+299+1005358+299, 1),
+            seq(1005960+299+1005358+299+1028940, 
+                1005960+299+1005358+299+1028940+299, 1)),
           "uncertainty_level"] <-
   rep(rep(rep(c("high", "mid", "low"), each = 10), 5),6)
 
@@ -159,11 +159,11 @@ full_data <- full_data %>%
                 prop_scenario = plyr::revalue(prop_scenario, 
                                               c("f_only"="reproduction \nonly", 
                                                 "s_only"="survival \nonly",
-                                                "full" = "full \npropagation",
-                                                "none" = "no \npropagation")),
+                                                "full" = "full",
+                                                "none" = "none")),
                 prop_scenario = fct_relevel(prop_scenario, 
-                                            "no \npropagation",
-                                            "full \npropagation",
+                                            "none",
+                                            "full",
                                             "reproduction \nonly",
                                             "survival \nonly"),
                 uncertainty_level = as.factor(uncertainty_level),
@@ -197,9 +197,9 @@ elasticity_all <- elasticity_all %>%
                 prop_scenario = plyr::revalue(prop_scenario, 
                                               c("f_only"="reproduction \nonly", 
                                                 "s_only"="survival \nonly",
-                                                "full" = "full \npropagation")),
+                                                "full" = "full")),
                 prop_scenario = fct_relevel(prop_scenario, 
-                                            "full \npropagation",
+                                            "full",
                                             "reproduction \nonly",
                                             "survival \nonly"),
                 uncertainty_level = as.factor(uncertainty_level),
@@ -383,27 +383,58 @@ Sankey_data <- data.frame(ID = rep(1:100, 3),
                                            each = 100),
                           node = c(rep("uncertainty \nreported", 78),
                                    rep("no \nuncertainty", 22),
-                                   rep("uncertainty \ncomplete", round(78*0.524)),
-                                   rep("uncertainty \nincomplete", round(78*0.476)),
+                                   rep("uncertainty \ncomplete", round(78*0.50)),
+                                   rep("uncertainty \nincomplete", round(78*0.50)),
                                    rep(NA, 22),
-                                   rep("full \npropagation", round(41*0.791)),
-                                   rep("partial \npropagation", round(41*0.023)),
-                                   rep("no \npropagation", round(41*0.07)),
-                                   rep("can't \ntell", round(41*0.116)),
-                                   rep("partial \npropagation", round(22*0.52)), # this includes those that propagated all they had
-                                   rep("no \npropagation", round(22*0.39)), 
-                                   rep("can't \ntell", round((22*0.087)+15)), # this includes those will all vital rates missing
+                                   rep("full \npropagation", round(39*0.825)),
+                                   rep("partial \npropagation", round(39*0.025)),
+                                   rep("no \npropagation", round(39*0.075)),
+                                   rep("can't \ntell", round(39*0.075)),
+                                   rep("partial \npropagation", 
+                                       round((23*0.39)+(23*0.13))), # this includes those that propagated all they had
+                                   rep("no \npropagation", round(23*0.39)), 
+                                   rep("can't \ntell", 
+                                       round((23*0.087)+16)), # this includes those will all vital rates missing
                                    rep(NA, 22)), # set up all initial nodes
-                          next_node = c(rep("uncertainty \ncomplete", round(78*0.524)),
-                                        rep("uncertainty \nincomplete", round(78*0.476)),
+                          next_node = c(rep("uncertainty \ncomplete", round(78*0.50)),
+                                        rep("uncertainty \nincomplete", round(78*0.50)),
                                         rep(NA, 22),
-                                        rep("full \npropagation", round(41*0.791)),
-                                        rep("partial \npropagation", round(41*0.023)),
-                                        rep("no \npropagation", round(41*0.07)),
-                                        rep("can't \ntell", round(41*0.116)),
-                                        rep("partial \npropagation", round(37*0.59*0.521)), # this includes those that propagated all they had
-                                        rep("no \npropagation", round(37*0.59*0.391)), 
-                                        rep("can't \ntell", round((22*0.087)+15)), # this includes those will all vital rates missing
+                                        rep("full \npropagation", round(39*0.825)),
+                                        rep("partial \npropagation", round(39*0.025)),
+                                        rep("no \npropagation", round(39*0.075)),
+                                        rep("can't \ntell", round(39*0.075)),
+                                        rep("partial \npropagation", 
+                                            round((23*0.391)+(23*0.13))), # this includes those that propagated all they had
+                                        rep("no \npropagation", round(23*0.391)), 
+                                        rep("can't \ntell", 
+                                            round((23*0.087)+16)), # this includes those will all vital rates missing
+                                        rep(NA, 22),
+                                        rep(NA, 100)),
+                          label = c(rep("yes", 78),
+                                    rep("no", 22),
+                                    rep("yes", round(78*0.5)),
+                                    rep("no", round(78*0.5)),
+                                    rep(NA, 22),
+                                    rep("full", round(39*0.825)),
+                                    rep("partial", round(39*0.025)),
+                                    rep("none", round(39*0.075)),
+                                    rep("can't \ntell", round(39*0.075)),
+                                    rep("partial", 
+                                        round((23*0.391)+(23*0.13))), # this includes those that propagated all they had
+                                    rep("none", round(23*0.391)), 
+                                    rep("can't \ntell", round((23*0.087)+16)), # this includes those will all vital rates missing
+                                    rep(NA, 22)), # set up all initial nodes
+                          next_label = c(rep("yes", round(78*0.5)),
+                                        rep("no", round(78*0.5)),
+                                        rep(NA, 22),
+                                        rep("full", round(39*0.825)),
+                                        rep("partial", round(39*0.025)),
+                                        rep("none", round(39*0.075)),
+                                        rep("can't \ntell", round(39*0.075)),
+                                        rep("partial",
+                                            round((23*0.391)+(23*0.13))), # this includes those that propagated all they had
+                                        rep("none", round(23*0.391)), 
+                                        rep("can't \ntell", round((23*0.087)+16)), # this includes those will all vital rates missing
                                         rep(NA, 22),
                                         rep(NA, 100))) %>% # set up all second nodes 
   dplyr::mutate(node = as.factor(node),
@@ -423,7 +454,30 @@ Sankey_data <- data.frame(ID = rep(1:100, 3),
                                         "can't \ntell",
                                         "no \npropagation",
                                         "partial \npropagation",
-                                        "full \npropagation"))
+                                        "full \npropagation"),
+                label = as.factor(label),
+                label = fct_relevel(label,
+                                   "no",
+                                   "yes",
+                                   "can't \ntell",
+                                   "none",
+                                   "partial",
+                                   "full"),
+                next_label = as.factor(next_label),
+                next_label = fct_relevel(next_label,
+                                        "no",
+                                        "yes", 
+                                        "can't \ntell",
+                                        "none",
+                                        "partial",
+                                        "full"),
+                stage = as.factor(stage),
+                stage = plyr::revalue(stage,
+                                      c("1" = "uncertainty \nreported?",
+                                        "2" = "uncertainty \ncomplete?",
+                                        "3" = "propagation \ntype")))
+
+
 # remove NA rows for stages 2 and 3
 Sankey_data <- Sankey_data[-c(179:200, 279:300),]
 
@@ -438,23 +492,26 @@ Figure1_publication <- ggplot(Sankey_data,
            node = node,
            next_node = next_node,
            fill = factor(node),
-           label = node)) +
-  geom_sankey() +
-  geom_sankey(flow.alpha = 0.75, node.color = 1) +
+           label = label)) +
+  geom_sankey(flow.alpha = 0.6, node.color = 1) +
   scale_fill_viridis_d(option = "B", alpha = 0.95) +
-  geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-  theme_sankey(base_size = 5) +
+  geom_sankey_label(color = 1, fill = "white",
+                    hjust = 0.5, alpha = 0.8,
+                    size = 5) +
+  scale_x_discrete(position = "top") +
+  theme_sankey(base_size = 18) +
   theme(legend.position = "none",
-        axis.text.x = element_blank(),
+        #axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
 Figure1_publication
 
-# 32% have full propagation
+# 31% have full propagation
 
-# 12% partial, 11% none, 22% can't tell
+# 12% partial, 11% none, 20% can't tell
 
-ggsave("./Figures/pub_Figure1.png", Figure1_publication, width = 19, height =15, units = "cm")
+ggsave("./Figures/pub_Figure1.png", Figure1_publication, width = 20, 
+       height = 15, units = "cm")
 
 #### FIGURE 2: Life history and propagation, mid uncertainty, 3x3 matrix ####
 
@@ -477,24 +534,26 @@ Figure2_publication <- ggplot() +
               scale = "width") +
   geom_text(data = text_numbers,
             aes(x = 0.6, y = 2.3,
-                label = text)) +
+                label = text), size = 4) +
   scale_fill_manual(values = colours_scenario[1:4]) +
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Population growth rate",
-       title = "") +
+       title = "Population growth rate estimates under different 
+       propagation scenarios") +
   facet_grid(rows = vars(matrix_number),
 #  facet_grid(rows = vars(matrix_size),
              cols = vars(breeding_stages)) +
   plain_theme() +
   theme(legend.position = "none",
-        axis.text.x = element_text(angle = 0)) +
-  ylim(0,2.5)
+        axis.text.x = element_text(angle = 90,
+                                   vjust = 0.3)) +
+  ylim(0,3.5)
 
 Figure2_publication
 
 ggsave("./Figures/pub_Figure2.png", 
-       Figure2_publication, width = 19, height = 20, units = "cm")
+       Figure2_publication, width = 16.5, height = 15.5, units = "cm")
 
 #### FIGURE 3: conclusion changes, mid uncertainty, 3x3 matrix ####
 
@@ -507,7 +566,7 @@ text_numbers <- data.frame(breeding_stages = c(rep("reproduce in multiple stages
 
 # create reference conclusion dataframe
 conclusion_reference <- full_data %>%
-  filter(prop_scenario == "no \npropagation",
+  filter(prop_scenario == "none",
          uncertainty_level == "mid") %>%
   group_by(matrix_size, breeding_stages, matrix_number, lambda) %>%
   summarise(reference = mean(lambda)) %>%
@@ -552,15 +611,17 @@ Figure3_publication <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes") +
+       title = "Conclusion changes under different propagation scenarios") +
   plain_theme() +
-  theme(legend.position = "none") +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90,
+                                   vjust = 0.3)) +
   ylim(0,100)
 
 Figure3_publication 
 
-ggsave("./Figures/pub_Figure3.png", Figure3_publication, width = 19, height = 20, 
-       units = "cm")
+ggsave("./Figures/pub_Figure3.png", Figure3_publication, 
+       width = 16.5, height = 15.5, units = "cm")
 
 
 
@@ -607,7 +668,7 @@ Propagation_2x2_mid <- ggplot() +
   plain_theme() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 90)) +
-  ylim(0,2.5)
+  ylim(0,3.5)
 
 Propagation_2x2_mid
 
@@ -666,7 +727,7 @@ text_numbers <- data.frame(breeding_stages = c(rep("reproduce \nin multiple stag
 
 # create reference conclusion dataframe
 conclusion_reference <- full_data %>%
-  filter(prop_scenario == "no \npropagation",
+  filter(prop_scenario == "none",
          uncertainty_level == "mid") %>%
   group_by(matrix_size, breeding_stages, matrix_number, lambda) %>%
   summarise(reference = mean(lambda)) %>%
@@ -711,7 +772,7 @@ Conclusion_2x2_mid <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (2x2 matrix)") +
+       title = "Conclusion changes (2x2 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -739,7 +800,7 @@ Conclusion_5x5_mid <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (5x5 matrix)") +
+       title = "Conclusion changes (5x5 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -772,7 +833,7 @@ Propagation_2x2_low <- ggplot() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 90),
         strip.text.y = element_blank()) +
-  ylim(0,3)
+  ylim(0,3.5)
 
 Propagation_3x3_low <- ggplot() +
   geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
@@ -795,7 +856,7 @@ Propagation_3x3_low <- ggplot() +
         axis.text.x = element_text(angle = 90),
         strip.text.y = element_blank(),
         axis.text.y = element_blank()) +
-  ylim(0,3)
+  ylim(0,3.5)
 
 Propagation_5x5_low <- ggplot() +
   geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
@@ -817,12 +878,14 @@ Propagation_5x5_low <- ggplot() +
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 90),
         axis.text.y = element_blank()) +
-  ylim(0,3)
+  ylim(0,3.5)
 
 Propagation_2x2_low +
 Propagation_3x3_low +
 Propagation_5x5_low +
-  plot_annotation(title = "Uncertainty in population growth rate (low-level uncertainty)")
+  plot_annotation(title = 
+                    "Uncertainty in population growth rate 
+                  (low-level uncertainty) under different propagation scenarios")
 
 ggsave("./Figures/SOM_Propagation_low_ALL.png", 
        last_plot(), width = 25, height = 20, units = "cm")
@@ -900,7 +963,8 @@ Propagation_5x5_high <- ggplot() +
 Propagation_2x2_high +
   Propagation_3x3_high +
   Propagation_5x5_high +
-  plot_annotation(title = "Uncertainty in population growth rate (high-level uncertainty)")
+  plot_annotation(title = "Uncertainty in population growth rate (high-level uncertainty) 
+                  under different propagation scenarios")
 
 ggsave("./Figures/SOM_Propagation_high_ALL.png", 
        last_plot(), width = 25, height = 20, units = "cm")
@@ -909,7 +973,7 @@ ggsave("./Figures/SOM_Propagation_high_ALL.png",
 
 # create reference conclusion dataframe
 conclusion_reference <- full_data %>%
-  filter(prop_scenario == "no \npropagation",
+  filter(prop_scenario == "none",
          uncertainty_level == "low") %>%
   group_by(matrix_size, breeding_stages, matrix_number, lambda) %>%
   summarise(reference = mean(lambda)) %>%
@@ -951,7 +1015,7 @@ Conclusion_2x2_low <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (2x2 matrix)") +
+       title = "Conclusion changes (2x2 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -976,7 +1040,7 @@ Conclusion_3x3_low <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (3x3 matrix)") +
+       title = "Conclusion changes (3x3 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -1002,7 +1066,7 @@ Conclusion_5x5_low <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (5x5 matrix)") +
+       title = "Conclusion changes (5x5 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -1017,7 +1081,7 @@ ggsave("./Figures/SOM_Conclusion_5x5_low.png", Conclusion_5x5_low,
 
 # create reference conclusion dataframe
 conclusion_reference <- full_data %>%
-  filter(prop_scenario == "no \npropagation",
+  filter(prop_scenario == "none",
          uncertainty_level == "high") %>%
   group_by(matrix_size, breeding_stages, matrix_number, lambda) %>%
   summarise(reference = mean(lambda)) %>%
@@ -1059,7 +1123,7 @@ Conclusion_2x2_high <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (2x2 matrix)") +
+       title = "Conclusion changes (2x2 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -1084,7 +1148,7 @@ Conclusion_3x3_high <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (3x3 matrix)") +
+       title = "Conclusion changes (3x3 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -1109,7 +1173,7 @@ Conclusion_5x5_high <- ggplot()+
   scale_color_manual(values = c(colours_scenario[1], rep("black",3)))+
   labs(x = "",
        y = "Percentage of times conclusion changed",
-       title = "Conclusion changes (5x5 matrix)") +
+       title = "Conclusion changes (5x5 matrix) under different propagation scenarios") +
   plain_theme() +
   theme(legend.position = "none") +
   ylim(0,100)
@@ -1198,7 +1262,8 @@ Elasticity_5x5_low <- ggplot()+
 Elasticity_5x5_low 
 
 Elasticity_2x2_low + Elasticity_3x3_low + Elasticity_5x5_low +
-  plot_annotation(title = "Dominant elasticity changes (low-level uncertainty)")
+  plot_annotation(title = "Dominant elasticity changes (low-level uncertainty) 
+                  under different propagation scenarios")
 
 ggsave("./Figures/SOM_Elasticity_low.png", last_plot(),
        width = 25, height = 20, 
@@ -1280,7 +1345,8 @@ Elasticity_5x5_mid <- ggplot()+
 Elasticity_5x5_mid 
 
 Elasticity_2x2_mid + Elasticity_3x3_mid + Elasticity_5x5_mid +
-  plot_annotation(title = "Dominant elasticity changes (mid-level uncertainty)")
+  plot_annotation(title = "Dominant elasticity changes (mid-level uncertainty)
+                   under different propagation scenarios")
 
 ggsave("./Figures/SOM_Elasticity_mid.png", last_plot(),
        width = 25, height = 20, 
@@ -1362,7 +1428,8 @@ Elasticity_5x5_high <- ggplot()+
 Elasticity_5x5_high 
 
 Elasticity_2x2_high + Elasticity_3x3_high + Elasticity_5x5_high +
-  plot_annotation(title = "Dominant elasticity changes (high-level uncertainty)")
+  plot_annotation(title = "Dominant elasticity changes (high-level uncertainty)
+                   under different propagation scenarios")
 
 ggsave("./Figures/SOM_Elasticity_high.png", last_plot(),
        width = 25, height = 20, 
