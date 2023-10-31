@@ -486,13 +486,20 @@ Sankey_data <- Sankey_data[-c(179:200, 279:300),]
 # then move to uncert propagated or not (complete - full 79.1%, partial 2.3%, none 7%, can't tell 11.6%)
 # (incomplete - full 39.1%, partial 13%, none 3.9%, can't tell 8.7% (41% no vital rates))
 
-Figure1_publication <- ggplot(Sankey_data, 
+sankey_tally <- Sankey_data%>%
+  dplyr::group_by(node)%>%
+  tally()
+
+Sankey_data2 <- merge(Sankey_data, sankey_tally, by.x = 'node', by.y = 'node', all.x = TRUE)
+
+
+Figure1_publication <- ggplot(Sankey_data2, 
        aes(x = stage,
            next_x = next_stage,
            node = node,
            next_node = next_node,
            fill = factor(node),
-           label = label)) +
+             label = paste0(label, ", ",n, "%"))) +
   geom_sankey(flow.alpha = 0.6, node.color = 1) +
   scale_fill_viridis_d(option = "B", alpha = 0.95) +
   geom_sankey_label(color = 1, fill = "white",

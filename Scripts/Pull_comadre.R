@@ -74,6 +74,8 @@ DOI_summary <- comadre_reduced %>%
 
 write.csv(DOI_summary, "./Data files/DOIs.csv")
 
+length(unique(comadre_2010$DOI_ISBN))
+
 DOI_summary_2010 <- comadre_2010 %>% 
   filter(as.numeric(StudyDuration) > 0) %>%
   group_by(DOI_ISBN) %>% 

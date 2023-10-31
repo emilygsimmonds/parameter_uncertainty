@@ -340,7 +340,7 @@
 3,Do they model an observation process for survival?,no,estimated from mark-recapture and tuffie removal experiments,10.1890/11-0488.1,2011,Carson,
 4,Do they model an observation process for fecundity?,no,mean recruits/m2 divided by mean adults/m2,10.1890/11-0488.1,2011,Carson,
 5,Was uncertainty reported?,yes,bootstrapped elasticity using life stage simulation analysis,10.1890/11-0488.1,2011,Carson,
-6,"If reported, was the uncertainty complete for all parameters?",no,mismatch between matrices in Appendix A and uncertainty,10.1890/11-0488.1,2011,Carson,
+6,"If reported, was the uncertainty complete for all parameters?",no,can't tell,10.1890/11-0488.1,2011,Carson,mismatch between matrices in Appendix A and uncertainty
 7,Was lambda estimated from matrix? If yes what conclusion,yes,lambda altered by metapopulation connectivity,10.1890/11-0488.1,2011,Carson,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,yes,highest importance was fecundity in fall season,10.1890/11-0488.1,2011,Carson,
 9,Pre or post breeding census,birth flow,,10.1890/11-0488.1,2011,Carson,
