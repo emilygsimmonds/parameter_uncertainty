@@ -230,7 +230,7 @@ Figure_1A <- ggplot() +
   geom_violin(data = filter(full_data,
                             uncertainty_level == "mid",
                             matrix_size == "size 3",
-                            breeding_stages == "breed multiple stages",
+                            breeding_stages == "reproduce in multiple stages",
                             matrix_number == 1), 
               aes(x = prop_scenario, 
                   y = lambda, fill = prop_scenario,
@@ -244,7 +244,7 @@ Figure_1A <- ggplot() +
        title = "Survival dominant") +
   BES_theme() +
   theme(legend.position = "none") +
-  ylim(0,2.5)
+  ylim(-0.5,2.5)
 
 Figure_1B <- ggplot() +
 #  geom_hline(yintercept = 1, linetype = "dashed", colour = "blue") +
@@ -253,7 +253,7 @@ Figure_1B <- ggplot() +
   geom_violin(data = filter(full_data,
                             uncertainty_level == "mid",
                             matrix_size == "size 3",
-                            breeding_stages == "breed multiple stages",
+                            breeding_stages == "reproduce in multiple stages",
                             matrix_number == 1), 
               aes(x = prop_scenario, 
                   y = lambda, fill = prop_scenario,
@@ -326,7 +326,7 @@ Figure_3A <- ggplot() +
   geom_violin(data = filter(full_data,
                             uncertainty_level == "mid",
                             matrix_size == "size 3",
-                            breeding_stages == "breed multiple stages",
+                            breeding_stages == "reproduce in multiple stages",
                             matrix_number == 5), 
               aes(x = prop_scenario, 
                   y = lambda, fill = prop_scenario,
@@ -349,7 +349,7 @@ Figure_3B <- ggplot() +
   geom_violin(data = filter(full_data,
                             uncertainty_level == "mid",
                             matrix_size == "size 3",
-                            breeding_stages == "breed multiple stages",
+                            breeding_stages == "reproduce in multiple stages",
                             matrix_number == 5), 
               aes(x = prop_scenario, 
                   y = lambda, fill = prop_scenario,
