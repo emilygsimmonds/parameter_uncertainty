@@ -122,7 +122,7 @@
 9,Pre or post breeding census,pre,,10.1016/j.baae.2010.11.004,2010,Sergio,
 10,Life cycle correctly estimated?,yes,,10.1016/j.baae.2010.11.004,2010,Sergio,
 11,What is error if one found?,NA,,10.1016/j.baae.2010.11.004,2010,Sergio,
-12,What metric used for fecundity?,half fledged young per breeding attempt to represent female offspring that make it to 1 year,,10.1016/j.baae.2010.11.004,2010,Sergio,I think they could have done better given they have resighting data
+12,What metric used for fecundity?,half fledged young per breeding attempt to represent female offspring that make it to 1 year,,10.1016/j.baae.2010.11.004,2010,Sergio,they have resighting data
 13,Sample size,4581,number of individuals,10.1016/j.baae.2010.11.004,2010,Sergio,
 ,,,,,,,
 1,Is there an MPM in original paper?,yes,,http://dx.doi.org/10.1016/j.envsoft.2016.02.009,2016,Stratford,Includes density dependence through recruitment
@@ -606,7 +606,7 @@
 3,Do they model an observation process for survival?,yes,multi-state capture-recapture model,10.1111/1365-2656.12206,2014,Szostek,
 4,Do they model an observation process for fecundity?,no,Poisson regression,10.1111/1365-2656.12206,2014,Szostek,"report uncertainty as SD, presumably of the posterior"
 5,Was uncertainty reported?,yes,,10.1111/1365-2656.12206,2014,Szostek,
-6,"If reported, was the uncertainty complete for all parameters?",yes,,10.1111/1365-2656.12206,2014,Szostek,really badly written methods and results - equations with nothing defined until much later
+6,"If reported, was the uncertainty complete for all parameters?",yes,,10.1111/1365-2656.12206,2014,Szostek,I found methods hard to understand
 7,Was lambda estimated from matrix? If yes what conclusion,no,,10.1111/1365-2656.12206,2014,Szostek,
 8,Was a sensitivity/elasticity analysis conducted? If yes what was conclusion,no,,10.1111/1365-2656.12206,2014,Szostek,
 9,Pre or post breeding census,pre,,10.1111/1365-2656.12206,2014,Szostek,
@@ -743,7 +743,7 @@
 ,,,,,,,
 1,Is there an MPM in original paper?,yes,use over 1000 matrices,10.1007/s10144-018-0620-y,2018,Nicol-Harper,
 2,Organism,mammal,humans,10.1007/s10144-018-0620-y,2018,Nicol-Harper,
-3,Do they model an observation process for survival?,no,direct calculation: 1 - 5 times deaths/population size,10.1007/s10144-018-0620-y,2018,Nicol-Harper,bit suspect that some survival estimates became negative
+3,Do they model an observation process for survival?,no,direct calculation: 1 - 5 times deaths/population size,10.1007/s10144-018-0620-y,2018,Nicol-Harper,some survival estimates became negative
 4,Do they model an observation process for fecundity?,no,direct calculation: 5 times births over population size times square root of maternal survival times square root of 0-4 survival ,10.1007/s10144-018-0620-y,2018,Nicol-Harper,
 5,Was uncertainty reported?,no,,10.1007/s10144-018-0620-y,2018,Nicol-Harper,
 6,"If reported, was the uncertainty complete for all parameters?",NA,,10.1007/s10144-018-0620-y,2018,Nicol-Harper,
@@ -1554,7 +1554,7 @@
 13,Sample size,519,total sponges across 2 sites,10.1890/08-2060.1,2010,McMurray,
 ,,,,,,,
 1,Is there an MPM in original paper?,yes,,10.1890/09-1641.1,2010,Hunter,
-2,Organism,mammal,polar bear,10.1890/09-1641.1,2010,Hunter,USEFUL POLICY QUOTES
+2,Organism,mammal,polar bear,10.1890/09-1641.1,2010,Hunter,USEFUL REFERENCES TO POLICY
 3,Do they model an observation process for survival?,yes,multi-state mark recapture model,10.1890/09-1641.1,2010,Hunter,
 4,Do they model an observation process for fecundity?,yes,multi-state mark recapture model output combined with estimate of litter size,10.1890/09-1641.1,2010,Hunter,
 5,Was uncertainty reported?,yes,parametric bootstrap for model and parameter estimation uncertainty,10.1890/09-1641.1,2010,Hunter,
