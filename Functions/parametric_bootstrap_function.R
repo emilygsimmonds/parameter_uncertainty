@@ -2,7 +2,8 @@
 
 # takes mean matrix and defined uncertainty/variance and resamples
 
-# for each iteration calculates lambda and elasticity (outputs most important matrix element)
+# for each iteration calculates lambda and elasticity (outputs most important 
+# matrix element)
 
 ################################################################################
 
